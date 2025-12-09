@@ -7,7 +7,7 @@ from typing import List
 from nbody.bodies import Body, G
 
 
-def compute_accelerations(bodies: List[Body]):
+def compute_accelerations(bodies: List[Body]): #called in solvers
 
     N = len(bodies)
     ax = [0.0] * N

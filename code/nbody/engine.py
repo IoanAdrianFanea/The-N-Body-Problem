@@ -1,4 +1,4 @@
-## holds configurations of the simulation and runs it
+## holds configurations of the simulation & simulation itself and runs it
 
 
 import matplotlib.pyplot as plt
@@ -12,7 +12,7 @@ from nbody.integrators.euler import EulerIntegrator
 from nbody.solvers.direct import DirectSolver
 
 
-class SimulationConfig:
+class SimulationConfig: 
 
     def __init__(self, bodies, cfg, integrator=None, solver=None):
         self.state = SystemState(bodies)

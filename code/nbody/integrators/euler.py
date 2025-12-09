@@ -3,19 +3,14 @@
 ##it asks the solver for accelerations and uses them to update positions and velocities, then returns the system 
 
 
-from typing import Callable
 from nbody.bodies import Body, SystemState
 from nbody.integrators import Integrator
 
 
 class EulerIntegrator(Integrator):
 
-    def step(
-        self,
-        state: SystemState,
-        cfg: "SimulationConfig",
-        accel_fn: Callable
-    ) -> SystemState:
+    def step(self, state, cfg, accel_fn):
+        
         bodies = state.bodies
         dt = cfg.dt
 

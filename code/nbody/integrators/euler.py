@@ -15,18 +15,20 @@ class EulerIntegrator(Integrator):
         dt = cfg.dt
 
         # compute accelerations for all bodies
-        ax, ay = accel_fn(bodies)
+        ax, ay, az = accel_fn(bodies)
 
         new_bodies = []
         for i, b in enumerate(bodies):
-            nb = Body(b.m, b.x, b.y)
+            nb = Body(b.m, b.x, b.y, b.z)
 
 
             nb.vx = b.vx + dt * ax[i]
             nb.vy = b.vy + dt * ay[i]
+            nb.vz = b.vz + dt * az[i]
 
             nb.x = b.x + dt * b.vx
             nb.y = b.y + dt * b.vy
+            nb.z = b.z + dt * b.vz
             
             new_bodies.append(nb)
 

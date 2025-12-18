@@ -1,0 +1,87 @@
+Architecture Evolution
+
+This file explains how the architecture of the N-body simulation project changed over time.
+The final design was not planned upfront and instead evolved through implementation,
+debugging, and learning more about numerical physics.
+
+
+
+Initial Plan
+
+At the beginning, the goal was simply to build an N-body simulator that could move bodies
+under gravity and show the result visually.
+
+The early plan was simple:
+- one simulation loop
+- bodies, force computation, integration, and diagnostics all mixed together
+- physics formulas written directly inside integration code
+- diagnostics added when something looked wrong
+
+At this stage, the main focus was on getting something working rather than correctness
+or long-term stability.
+
+
+
+Early Implementation and Misconceptions
+
+As the project progressed, several problems appeared that were not obvious at first.
+
+The biggest issue was misunderstanding how the Leapfrog integrator works.
+Velocities were updated at the wrong time level, which caused large errors in energy
+and angular momentum at early timesteps.
+
+Other issues included:
+- mixing physics logic with integration code, making bugs harder to isolate
+- measuring energy and momentum on states that were not time-aligned
+- assuming energy should be exactly conserved instead of oscillating for symplectic methods
+- incorrect angular momentum calculations after extending the system from 2D to 3D
+
+At the time, these problems looked like numerical instability, but later turned out
+to be conceptual and architectural mistakes.
+
+
+
+Key Architectural Corrections
+
+To fix these issues, the project architecture was gradually restructured.
+
+The main changes were:
+- bodies were limited to storing physical state only (mass, position, velocity)
+- all physics calculations were moved into stateless helper functions
+- solvers were made responsible only for computing accelerations
+- integrators were made responsible only for advancing the system in time
+- diagnostics were separated from integration and computed on synchronized states
+- the simulation engine became an orchestration layer instead of containing physics logic
+- the Barnes–Hut octree was isolated from the rest of the simulation code
+
+Each change was motivated by incorrect diagnostics or broken conservation laws rather
+than performance concerns.
+
+
+
+Final Architecture (Current)
+
+The current structure reflects these corrections.
+
+- bodies store only physical state
+- physics functions compute forces, energies, momentum, and center of mass
+- solvers compute accelerations from positions
+- integrators advance the system in time and handle time staggering
+- the engine coordinates stepping and diagnostics
+- spatial data structures used by solvers are isolated
+
+This structure allows solvers and integrators to be swapped without changing
+diagnostics or validation code.
+
+
+
+Lessons Learned
+
+Most numerical issues were caused by misunderstandings of physics or time integration,
+not coding mistakes.
+
+Diagnostics are part of the algorithm and must respect the integrator’s internal state.
+
+Separating responsibilities made debugging and validation much easier.
+
+The final architecture emerged from fixing mistakes rather than being designed upfront.

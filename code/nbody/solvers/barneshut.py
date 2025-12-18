@@ -1,5 +1,5 @@
 from code.nbody.solvers import Solver
-from code.nbody.octree import OctreeNode
+from code.nbody.trees.octree import OctreeNode
 
 
 class BarnesHutSolver(Solver):

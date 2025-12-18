@@ -37,29 +37,29 @@ seed = 42
 bodies0 = make_random_bodies(N, seed=seed)
 
 sim_direct = run_sim([Body(*b.asTuple()) for b in bodies0], DirectSolver())
-sim_bh = run_sim([Body(*b.asTuple()) for b in bodies0], BarnesHutSolver(theta=0.5))
+sim_bh = run_sim([Body(*b.asTuple()) for b in bodies0], BarnesHutSolver(theta=1))
 
 plt.figure()
 plt.plot(sim_direct.energy_drift, label="Direct")
-plt.plot(sim_bh.energy_drift, label="Barnes–Hut θ=0.5")
+plt.plot(sim_bh.energy_drift, label="Barnes–Hut θ=1")
 plt.title("Relative Energy Drift")
 plt.legend()
 
 plt.figure()
 plt.plot(sim_direct.angular_momentum_drift, label="Direct")
-plt.plot(sim_bh.angular_momentum_drift, label="Barnes–Hut θ=0.5")
+plt.plot(sim_bh.angular_momentum_drift, label="Barnes–Hut θ=1")
 plt.title("Angular Momentum Drift")
 plt.legend()
 
 plt.figure()
 plt.plot(sim_direct.linear_momentum_drift, label="Direct")
-plt.plot(sim_bh.linear_momentum_drift, label="Barnes–Hut θ=0.5")
+plt.plot(sim_bh.linear_momentum_drift, label="Barnes–Hut θ=1")
 plt.title("|P(t)|")
 plt.legend()
 
 plt.figure()
 plt.plot(sim_direct.com_drift, label="Direct")
-plt.plot(sim_bh.com_drift, label="Barnes–Hut θ=0.5")
+plt.plot(sim_bh.com_drift, label="Barnes–Hut θ=1")
 plt.title("Center-of-Mass Drift")
 plt.legend()
 

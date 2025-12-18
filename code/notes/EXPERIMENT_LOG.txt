@@ -338,3 +338,47 @@ Next actions:
 - Complete θ sweep with θ = 1.0.
 - Summarize θ-dependent accuracy trends.
 - Transition to Phase 5 (performance and scaling tests).
+
+
+
+
+
+
+
+
+
+DATE: 18/12/25
+
+Integrator: Leapfrog (Velocity Verlet)
+Solvers: Direct O(N²) vs Barnes–Hut Octree (θ = 1.0)
+
+dt, steps, softening: dt = 2e-3, steps = 2000, softening = 1e-3
+
+Scenario:
+Random 3D N-body system (N = 15, seed = 42) with random initial positions, velocities, and masses.
+Same initial conditions used for both solvers.
+
+Expected:
+- Large θ should significantly increase approximation error.
+- Energy remains bounded but deviates strongly from DirectSolver.
+- Angular momentum and linear momentum conservation degrade due to force asymmetry.
+- Center-of-mass drift increases with θ.
+
+Observed:
+- Relative energy drift:
+  Barnes–Hut (θ = 1.0) shows large bounded deviations relative to DirectSolver.
+- Angular momentum drift:
+  Significant bounded drift (~10⁻¹), while Direct remains flat.
+- |P(t)|:
+  Barnes–Hut exhibits visible deviation from Direct but remains bounded.
+- Center-of-mass drift:
+  Barnes–Hut shows noticeably larger linear drift than DirectSolver.
+
+Conclusion:
+Large θ values increase Barnes–Hut approximation error while preserving overall numerical stability.
+Results clearly demonstrate the accuracy–approximation tradeoff governed by θ and validate solver behavior.
+
+Next actions:
+- Summarize θ-dependent accuracy trends.
+- Conclude Phase 4 (Barnes–Hut solver).
+- Proceed to Phase 5: performance and scaling analysis.

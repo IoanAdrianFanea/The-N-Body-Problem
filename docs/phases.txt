@@ -1,0 +1,42 @@
+Project Phases Overview
+
+Phase 0 — Architecture Setup (Complete)
+- Modular project structure
+- Separation of bodies, physics, solvers, integrators, engine
+
+Phase 1 — Integrators (Complete)
+- Forward Euler (non-symplectic)
+- Leapfrog / Velocity Verlet (symplectic)
+- Correct half-step handling
+
+Phase 2 — Validation & Diagnostics (Complete)
+- Energy, angular momentum, linear momentum
+- Center-of-mass tracking
+- Euler vs Leapfrog comparison
+
+Phase 3 — Full 3D Extension (Complete)
+- 3D positions and velocities
+- 3D forces and diagnostics
+- Planar and non-planar validation
+
+Phase 4 — Barnes–Hut Solver (Complete)
+- 3D octree implementation
+- Theta-based force approximation
+- Accuracy vs approximation validation
+
+Phase 5 — Performance & Scaling (Current)
+- Runtime scaling analysis
+- Direct vs Barnes–Hut crossover
+- Accuracy vs theta tradeoffs
+
+Phase 6 — Optimization (Planned)
+- NumPy vectorization
+- Possible Numba acceleration
+
+Phase 7 — Visualization & Interface (Planned)
+- Improved plotting
+- Real-time animation
+
+Phase 8 — Advanced Extensions (Optional)
+- Machine learning experiments
+- Controlled dynamical systems

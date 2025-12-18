@@ -25,4 +25,55 @@ class OctreeNode:
             position = self.cube_to_insert(body_to_insert)
             self.children[position].insert(body_to_insert)
             
-        self._update_mass_and_com(body_to_insert)
+        self._update_mass_and_com(body_to_insert) #this runs once per visit of node
+
+
+    def subdivide(self): #remember that this breaks when body has same position as another
+        quarter = self.half_size / 2
+        offsets = [(-quarter, -quarter, -quarter), (quarter, -quarter, -quarter),
+                   (-quarter, quarter, -quarter), (quarter, quarter, -quarter),
+                   (-quarter, -quarter, quarter), (quarter, -quarter, quarter),
+                   (-quarter, quarter, quarter), (quarter, quarter, quarter)]
+        
+        self.children = []
+        for dx, dy, dz in offsets:
+            new_center = (self.center[0] + dx,
+                          self.center[1] + dy,
+                          self.center[2] + dz)
+            self.children.append(OctreeNode(new_center, quarter))
+
+
+    def cube_to_insert(self, body: Body):
+        index = 0
+        if body.x >= self.center[0]:
+            index |= 1
+        if body.y >= self.center[1]:
+            index |= 2
+        if body.z >= self.center[2]:
+            index |= 4
+        return index
+    
+    def _insert_into_child(self, body: Body):
+        position = self.cube_to_insert(body)
+        self.children[position].insert(body)
+
+
+    def _update_mass_and_com(self, body: Body):
+        m = body.m
+        x, y, z = body.x, body.y, body.z
+
+        M = self.total_mass
+
+        if M == 0.0:
+            self.center_of_mass = (x, y, z)
+            self.total_mass = m
+        else:
+            new_M = M + m
+            cx, cy, cz = self.center_of_mass
+
+            self.center_of_mass = (
+                (cx * M + x * m) / new_M,
+                (cy * M + y * m) / new_M,
+                (cz * M + z * m) / new_M,
+            )
+            self.total_mass = new_M

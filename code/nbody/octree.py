@@ -10,5 +10,19 @@ class OctreeNode:
         self.children = None 
 
 
-    def insert(self, body: Body):
-        pass
+    def insert(self, body_to_insert: Body):
+        if self.body is None and self.children is None:
+            self.body = body_to_insert
+
+        elif self.children is None and self.body is not None:
+            self.subdivide()
+            temp = self.body
+            self.body = None
+            self._insert_into_child(temp)
+            self._insert_into_child(body_to_insert)
+
+        else:
+            position = self.cube_to_insert(body_to_insert)
+            self.children[position].insert(body_to_insert)
+            
+        self._update_mass_and_com(body_to_insert)

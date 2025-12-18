@@ -6,6 +6,7 @@ from matplotlib.animation import FuncAnimation
 from code.nbody.bodies import Body, SystemState
 from code.nbody.integrators.euler import EulerIntegrator
 from code.nbody.solvers.direct import DirectSolver
+from code.nbody.solvers.barneshut import BarnesHutSolver
 from code.nbody.physics import (
     compute_kinetic_energy,
     compute_potential_energy,
@@ -27,7 +28,7 @@ class Simulation:
         self.state = SystemState(bodies)
         self.cfg = cfg
         self.integrator = integrator or EulerIntegrator()
-        self.solver = solver or DirectSolver()
+        self.solver = solver or DirectSolver() or BarnesHutSolver()
 
         self.state_history = []
 

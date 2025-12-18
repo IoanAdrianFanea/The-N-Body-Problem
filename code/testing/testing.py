@@ -1,6 +1,7 @@
 from code.nbody.bodies import Body
 from code.nbody.engine import Simulation, SimulationConfig
 from code.nbody.integrators.leapfrog import LeapfrogIntegrator
+from code.nbody.solvers.barneshut import BarnesHutSolver
 import matplotlib.pyplot as plt
 import math
 
@@ -18,7 +19,7 @@ planet = Body(
 
 cfg = SimulationConfig(dt=2e-4, timesteps=5000, softening=0.0)
 
-sim = Simulation([sun, planet], cfg, integrator=LeapfrogIntegrator())
+sim = Simulation([sun, planet], cfg, integrator=LeapfrogIntegrator(), solver = BarnesHutSolver(theta=0.5))
 sim.run()
 
 plt.figure()

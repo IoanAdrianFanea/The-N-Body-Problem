@@ -175,3 +175,41 @@ This validates the full 3D physics implementation, integrator updates, and diagn
 
 Next action:
 Proceed to Phase 4 (Barnes–Hut solver development).
+
+
+
+
+
+
+DATE: 18/12/25
+
+Integrator: Leapfrog (Velocity Verlet)
+Solver: Barnes–Hut Octree (θ = 0.7)
+
+dt, steps, softening: dt = 2e-4, steps = 5000, softening = 0.0
+
+Scenario:
+Two-body Sun–planet system in near-circular orbit.
+Same initial conditions used for DirectSolver validation.
+
+Expected:
+- Energy: bounded oscillatory error (symplectic integrator)
+- Angular momentum: conserved up to floating-point precision
+- Linear momentum: small constant offset due to approximate force symmetry
+- Center-of-mass: slow drift due to Barnes–Hut approximation
+
+Observed:
+- Max relative energy drift: ~2 × 10⁻⁹ (bounded, non-secular)
+- Angular momentum drift: ~1 × 10⁻¹⁵ (floating-point noise)
+- |P(t)|: ~1 × 10⁻¹⁰, constant after initialization
+- Center-of-mass drift: linear, reaching ~1 × 10⁻⁴ over 5000 steps
+
+Conclusion:
+Barnes–Hut solver reproduces direct-solver dynamics for small N with bounded energy error under symplectic integration.
+Angular momentum conservation is effectively exact.
+Small center-of-mass drift is observed, consistent with known Barnes–Hut force asymmetry and expected at this approximation level.
+
+Next actions:
+- Validate Barnes–Hut against DirectSolver for moderate N.
+- Study accuracy vs performance as a function of θ.
+- Proceed to performance-oriented testing (Phase 5).

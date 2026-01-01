@@ -47,3 +47,43 @@ Planned Next Steps
 Notes
 This phase focuses on understanding performance behavior.
 Optimization work will be incremental and guided by profiling results.
+
+
+
+
+Initial Profiling Setup (Barnes–Hut)
+Integrator: Leapfrog (Velocity Verlet)
+Solver: Barnes–Hut Octree (θ = 0.7)
+N = 1000
+Steps = 300
+dt = 2e-3
+Softening = 1e-3
+
+Summary of Results (Barnes–Hut)
+- Total runtime ~1038 seconds for the profiled run.
+- Runtime is dominated by recursive tree traversal during force evaluation.
+- OctreeNode.compute_accelerations accounts for the majority of runtime.
+- Tree construction (insert, subdivide, mass/COM updates) contributes noticeable
+  but smaller overhead.
+- Barnes–Hut results in extremely high function call counts due to recursion and
+  repeated node visits.
+- Leapfrog integration amplifies traversal cost due to repeated acceleration
+  evaluations per timestep.
+- Diagnostic computations remain expensive but are not the dominant cost.
+
+Comparison to DirectSolver
+- DirectSolver runtime is dominated by pairwise force computation.
+- Barnes–Hut runtime is dominated by Python recursion and object overhead.
+- Barnes–Hut shows better algorithmic scaling, but Python overhead significantly
+  reduces its practical performance advantage at this stage.
+
+Interpretation
+The profiling results explain why the current Barnes–Hut implementation is
+slower than expected despite improved asymptotic scaling.
+The algorithmic advantage is outweighed by Python-level overhead from recursion,
+object creation, and attribute access.
+
+Planned Next Steps
+- Identify low-risk ways to reduce tree traversal overhead.
+- Consider optimization strategies that reduce Python call counts.
+- Use profiling data to choose which solver to optimize first.

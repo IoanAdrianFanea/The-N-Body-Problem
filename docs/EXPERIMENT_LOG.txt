@@ -436,3 +436,55 @@ Next actions:
 - Use this profiling result to guide Phase 6 optimization decisions.
 - Focus first on reducing Python overhead in compute_accelerations.
 - Consider the cost of diagnostics separately from force computation.
+
+
+
+DATE: 01/01/2025
+
+Integrator: Leapfrog (Velocity Verlet)
+Solver: Barnes–Hut Octree (θ = 0.7)
+Profiling tool: Python cProfile + pstats
+
+Scenario:
+Random 3D N-body system used for Phase 6 profiling.
+N = 1000
+Steps = 300
+dt = 2e-3
+Softening = 1e-3
+
+Goal:
+Measure where runtime is spent in the Barnes–Hut solver and compare it to the
+DirectSolver profiling results, before attempting any optimization.
+
+Method:
+A dedicated profiling script was used to run a normal Barnes–Hut simulation
+while recording function-level runtime statistics.
+Results were sorted by cumulative time.
+
+Key Observations (Barnes–Hut):
+
+- Total runtime: ~1038 seconds (significantly slower than Direct profiling run).
+- The dominant cost is OctreeNode.compute_accelerations:
+  ~742 seconds cumulative.
+- Tree traversal during force evaluation dominates runtime more than tree
+  construction.
+- Tree construction costs are visible but secondary:
+  - insert(): ~30 seconds cumulative
+  - subdivide() and child insertion appear frequently but are not the main cost.
+- Leapfrog integration (step + synchronize) still contributes substantial cost
+  due to repeated acceleration evaluations.
+- Diagnostic computations (especially potential energy) remain expensive
+  but are not the main bottleneck.
+- Barnes–Hut introduces extremely large function call counts due to recursion
+  and repeated node visits.
+
+Conclusion:
+Barnes–Hut runtime is dominated by recursive tree traversal during force
+evaluation rather than by tree construction.
+Although Barnes–Hut has better asymptotic scaling, the Python implementation
+introduces very large overhead from recursion, object access, and function calls.
+
+Next actions:
+- Use profiling data to guide Phase 6 optimization.
+- Focus on reducing overhead in tree traversal and force evaluation.
+- Avoid premature algorithmic changes; target Python-level overhead first.

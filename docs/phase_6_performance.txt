@@ -1,0 +1,49 @@
+Phase 6 — Profiling & Optimization (In Progress)
+
+Goal
+Identify performance bottlenecks in the N-body simulation code before attempting
+any optimization.
+The purpose of this phase is to base optimization decisions on measured data
+rather than assumptions.
+
+Approach
+- Use Python's built-in cProfile to measure runtime at the function level.
+- Profile the full simulation pipeline (solver + integrator + diagnostics).
+- Sort results by cumulative runtime to identify dominant cost centers.
+- Perform profiling separately for Direct and Barnes–Hut solvers.
+
+Initial Profiling Setup (DirectSolver)
+Integrator: Leapfrog (Velocity Verlet)
+Solver: Direct O(N^2)
+N = 300
+Steps = 300
+dt = 2e-3
+Softening = 1e-3
+
+Summary of Results (DirectSolver)
+- Total runtime ~95 seconds for the profiled run.
+- The pairwise force calculation (compute_accelerations) dominates runtime.
+- This confirms the expected O(N^2) scaling cost of the DirectSolver.
+- Leapfrog integration contributes secondary cost due to repeated force
+  evaluations and synchronization.
+- Diagnostic computations (energy, momentum, COM) contribute noticeable but
+  smaller overhead.
+- State copying and object creation appear in the profile but are not the
+  primary bottleneck.
+
+Interpretation
+The profiling results match theoretical expectations:
+the majority of time is spent computing pairwise gravitational forces.
+This validates the correctness of the performance model and provides a clear
+target for optimization efforts in Phase 6.
+
+Planned Next Steps
+- Profile the Barnes–Hut solver to identify tree construction and traversal
+  costs.
+- Use profiling data to prioritize low-risk optimizations.
+- Avoid algorithmic changes; focus on reducing Python overhead.
+- Keep diagnostics intact to preserve validation correctness.
+
+Notes
+This phase focuses on understanding performance behavior.
+Optimization work will be incremental and guided by profiling results.

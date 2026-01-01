@@ -382,3 +382,57 @@ Next actions:
 - Summarize θ-dependent accuracy trends.
 - Conclude Phase 4 (Barnes–Hut solver).
 - Proceed to Phase 5: performance and scaling analysis.
+
+
+
+
+
+Phase 6 (Profiling)
+DATE: 01/01/2026
+
+Integrator: Leapfrog (Velocity Verlet)
+Solver: Direct O(N^2)
+Profiling tool: Python cProfile + pstats
+
+Scenario:
+Random 3D N-body system used for Phase 6 profiling.
+N = 300
+Steps = 300
+dt = 2e-3
+Softening = 1e-3
+
+Goal:
+Before attempting any optimization, measure where runtime is actually spent
+in the DirectSolver pipeline using a profiler instead of guessing.
+
+Method:
+A dedicated profiling script was added which runs a normal simulation and
+records function-level runtime statistics using cProfile.
+Results are sorted by cumulative time to identify the true performance
+bottlenecks.
+
+Key Observations (DirectSolver):
+
+- Total runtime: ~95 seconds
+- compute_accelerations (physics.py) dominates runtime:
+  ~71 seconds cumulative, corresponding to the O(N^2) pairwise force loop.
+- The solver.accelerations() call itself is negligible compared to the work
+  done inside compute_accelerations.
+- Leapfrog integration (step + synchronize) contributes a noticeable but
+  secondary cost (~35 seconds cumulative), largely due to repeated acceleration
+  evaluations.
+- Diagnostic calculations (potential energy, synchronization, state copying)
+  contribute non-trivial overhead but are not the primary bottleneck.
+- Potential energy computation alone accounts for ~20 seconds cumulative.
+
+Conclusion:
+Profiling confirms that the DirectSolver bottleneck is overwhelmingly dominated
+by the pairwise force calculation in compute_accelerations, as expected from
+O(N^2) scaling.
+However, diagnostic work and repeated acceleration calls inside Leapfrog also
+represent secondary costs.
+
+Next actions:
+- Use this profiling result to guide Phase 6 optimization decisions.
+- Focus first on reducing Python overhead in compute_accelerations.
+- Consider the cost of diagnostics separately from force computation.

@@ -439,7 +439,7 @@ Next actions:
 
 
 
-DATE: 01/01/2025
+DATE: 01/01/2026
 
 Integrator: Leapfrog (Velocity Verlet)
 Solver: Barnes–Hut Octree (θ = 0.7)
@@ -488,3 +488,69 @@ Next actions:
 - Use profiling data to guide Phase 6 optimization.
 - Focus on reducing overhead in tree traversal and force evaluation.
 - Avoid premature algorithmic changes; target Python-level overhead first.
+
+
+
+
+DATE: 05/01/2026
+
+Integrator: Leapfrog (Velocity Verlet)
+Profiling tool: Python cProfile + pstats
+Diagnostics: Disabled
+State history: Disabled
+
+Purpose:
+Re-run profiling with diagnostics and history disabled in order to isolate
+solver and integrator costs without diagnostic overhead.
+
+
+Direct Solver (Profiling Mode)
+
+Configuration:
+N = 300
+Steps = 300
+dt = 2e-3
+Softening = 1e-3
+
+Results:
+- Total runtime: ~72 seconds
+- Total function calls: ~5.5e5
+- Runtime is dominated by physics.compute_accelerations.
+- Leapfrog step and synchronize still contribute noticeable cost.
+- Diagnostic functions no longer appear in the hotspot list.
+
+Conclusion:
+With diagnostics disabled, the DirectSolver profile clearly shows that almost
+all runtime is spent in the pairwise force calculation, as expected from O(N^2)
+scaling.
+
+
+Barnes–Hut Solver (Profiling Mode)
+
+Configuration:
+N = 1000
+Steps = 300
+dt = 2e-3
+Softening = 1e-3
+Theta = 0.7
+
+Results:
+- Total runtime: ~760 seconds
+- Total function calls: ~2.1e8 (with ~1.9e8 primitive calls)
+- Runtime is dominated by octree.compute_accelerations.
+- Tree construction (insert, subdivide, mass/COM updates) contributes secondary
+  cost but is not dominant.
+- Leapfrog synchronize remains a significant contributor due to repeated
+  acceleration evaluations.
+- Diagnostic overhead is effectively removed.
+
+Conclusion:
+Barnes–Hut runtime is dominated by recursive tree traversal during force
+evaluation.
+The large number of function calls explains why profiling Barnes–Hut is much
+slower than DirectSolver under cProfile.
+
+Next actions:
+- Use these results to guide Phase 6 optimization.
+- Focus first on reducing Python overhead in Barnes–Hut tree traversal.
+- Avoid algorithmic changes; target local optimizations.

@@ -51,6 +51,8 @@ Optimization work will be incremental and guided by profiling results.
 
 
 
+
+
 Initial Profiling Setup (Barnes–Hut)
 Integrator: Leapfrog (Velocity Verlet)
 Solver: Barnes–Hut Octree (θ = 0.7)
@@ -87,3 +89,32 @@ Planned Next Steps
 - Identify low-risk ways to reduce tree traversal overhead.
 - Consider optimization strategies that reduce Python call counts.
 - Use profiling data to choose which solver to optimize first.
+
+
+Profiling Results (Diagnostics Disabled)
+
+Direct Solver
+- Total runtime ~72 seconds for the profiling run.
+- Hotspot is physics.compute_accelerations.
+- Confirms that DirectSolver performance is dominated by the O(N^2) force loop.
+- Integrator overhead is present but secondary.
+
+Barnes–Hut Solver
+- Total runtime ~760 seconds under profiling.
+- Extremely large function call count due to recursive tree traversal.
+- octree.compute_accelerations dominates cumulative runtime.
+- Tree construction costs are visible but not the primary bottleneck.
+- Profiling overhead disproportionately affects Barnes–Hut due to recursion.
+
+Interpretation
+With diagnostics removed, profiling confirms that:
+- DirectSolver cost comes from pairwise force computation.
+- Barnes–Hut cost comes from Python recursion and object-level traversal.
+- Barnes–Hut algorithmic advantages are masked by Python-level overhead during
+  profiling.
+
+Implication for Phase 6
+Optimization should focus on:
+- Reducing Python overhead in Barnes–Hut traversal.
+- Reducing attribute access and repeated computations.
+- Keeping the algorithm unchanged while improving execution efficiency.

@@ -55,6 +55,7 @@ class Simulation:
         self._clear_histories()
         accel_fn = self._initialize_simulation()
 
+        pss = None
         if self.cfg.record_history:
             pss = []
             pss.append([(b.x, b.y, b.z) for b in self.state.bodies])
@@ -63,7 +64,7 @@ class Simulation:
             self._step(accel_fn, step)
             if pss is not None:
                 pss.append([(b.x, b.y, b.z) for b in self.state.bodies])
-                
+
         return pss
     
 

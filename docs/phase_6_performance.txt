@@ -154,7 +154,7 @@ Simulation completed without errors and diagnostics behaved as expected.
 No obvious change in behavior observed.
 
 Results:
-Re-profiled Barnes–Hut with the N = 1000 configuration after optimizing
+Re-profiled Barnes–Hut with the N = 1000 configuration and diagnostics after optimizing
 compute_accelerations.
 
 - Time spent inside octree.compute_accelerations decreased.
@@ -171,3 +171,23 @@ Conclusion:
 This optimization alone is insufficient under profiling conditions.
 Further improvements must focus on reducing recursion and function call count,
 not just per-call arithmetic cost.
+
+
+Results (Real Runtime, No Profiling):
+
+Barnes–Hut timing comparison using identical configuration:
+
+- Original implementation: ~349.5 s
+- Optimized implementation: ~233.1 s
+
+This corresponds to an improvement of roughly 33%.
+
+Interpretation:
+Although profiling results were inconclusive due to profiler overhead,
+real runtime measurements show that reducing per-call overhead in
+octree.compute_accelerations leads to a substantial speedup.
+
+Conclusion:
+The optimization is effective and should be kept.
+Further Phase 6 work should focus on reducing recursion and function
+call count to achieve additional gains.

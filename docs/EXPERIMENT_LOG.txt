@@ -554,3 +554,7 @@ Next actions:
 - Use these results to guide Phase 6 optimization.
 - Focus first on reducing Python overhead in Barnes–Hut tree traversal.
 - Avoid algorithmic changes; target local optimizations.
+
+
+
+Optimisation Results moved to phase_6_performance.txt doc.

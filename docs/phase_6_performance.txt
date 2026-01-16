@@ -118,3 +118,56 @@ Optimization should focus on:
 - Reducing Python overhead in Barnes–Hut traversal.
 - Reducing attribute access and repeated computations.
 - Keeping the algorithm unchanged while improving execution efficiency.
+
+
+
+
+Optimization Attempt 1 — Barnes–Hut Tree Traversal (compute_accelerations)
+
+Change:
+Made small local optimizations inside octree.compute_accelerations:
+- Cached frequently accessed attributes into local variables.
+- Removed duplicate distance calculations.
+- Precomputed softening^2.
+- Returned early in the approximation case to reduce work.
+
+Reason:
+Profiling showed that octree.compute_accelerations dominates Barnes–Hut runtime.
+The goal was to reduce Python overhead per call without changing the algorithm.
+
+Expected Effect:
+Slight reduction in runtime due to fewer attribute lookups and repeated math
+operations in a function that is called many times.
+
+Notes:
+This change does not modify the Barnes–Hut opening-angle rule or force
+calculation.
+Behavior and accuracy should remain unchanged.
+
+Status:
+Pending re-profiling.
+
+Verification:
+Ran Barnes–Hut with N = 10 and diagnostics enabled after modifying
+compute_accelerations.
+Simulation completed without errors and diagnostics behaved as expected.
+No obvious change in behavior observed.
+
+Results:
+Re-profiled Barnes–Hut with the N = 1000 configuration after optimizing
+compute_accelerations.
+
+- Time spent inside octree.compute_accelerations decreased.
+- Overall profiling runtime increased.
+- Function call count increased significantly.
+
+Interpretation:
+The optimization reduced work per call but did not reduce the number of
+recursive calls.
+Under cProfile, the increased call count amplified profiler overhead, masking
+any real runtime improvement.
+
+Conclusion:
+This optimization alone is insufficient under profiling conditions.
+Further improvements must focus on reducing recursion and function call count,
+not just per-call arithmetic cost.

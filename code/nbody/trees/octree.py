@@ -81,36 +81,42 @@ class OctreeNode:
 
 
     def compute_accelerations(self, body: Body, theta: float, softening):
-        ax, ay, az = 0.0, 0.0, 0.0
-
-        if self.total_mass == 0.0 or (self.body is body and self.children is None):
+        total_mass = self.total_mass
+        if total_mass == 0.0 or (self.body is body and self.children is None):
             return (0.0, 0.0, 0.0)
 
-        dx = self.center_of_mass[0] - body.x
-        dy = self.center_of_mass[1] - body.y
-        dz = self.center_of_mass[2] - body.z
+        bx, by, bz = body.x, body.y, body.z 
+        cx, cy, cz = self.center_of_mass
 
-        dist = (dx**2 + dy**2 + dz**2 + softening**2)**0.5
+        dx = cx - bx
+        dy = cy - by
+        dz = cz - bz
 
-        if dist == 0.0:
+        soft2 = softening * softening  
+        dist2 = dx*dx + dy*dy + dz*dz + soft2 
+
+        if dist2 == 0.0:
             return (0.0, 0.0, 0.0)
 
-        s = self.half_size * 2
+        s = self.half_size * 2.0
 
-        if self.children is None or (s / dist) < theta:
+      
+        if self.children is None or (s / (dist2 ** 0.5)) < theta:
+            inv_dist = 1.0 / (dist2 ** 0.5) 
+            inv_dist3 = inv_dist / dist2
+            factor = G * total_mass * inv_dist3
 
-            dist2 = dx*dx + dy*dy + dz*dz + softening*softening #matches direct solver and prevents magic constrains
-            inv_dist3 = 1.0 / (dist2 * (dist2**0.5))
-            factor = G * self.total_mass * inv_dist3
+            return (factor * dx, factor * dy, factor * dz) 
 
-            ax += factor * dx
-            ay += factor * dy
-            az += factor * dz
-        else:
-            for child in self.children:
-                if child.total_mass > 0.0:
-                    c_ax, c_ay, c_az = child.compute_accelerations(body, theta, softening)
-                    ax += c_ax
-                    ay += c_ay
-                    az += c_az
+        ax = ay = az = 0.0
+        for child in self.children:
+            if child.total_mass > 0.0:
+                cax, cay, caz = child.compute_accelerations(body, theta, softening)
+                ax += cax
+                ay += cay
+                az += caz
+
         return (ax, ay, az)
+
+
+        

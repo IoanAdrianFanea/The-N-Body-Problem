@@ -42,6 +42,8 @@ def make_random_bodies(N, seed=42, pos_scale=1.0, vel_scale=0.5, m_min=1e-3, m_m
 
 def run_case(N, steps, dt, softening, solver):
     cfg = SimulationConfig(dt=dt, timesteps=steps, softening=softening)
+    cfg.record_history = True
+    cfg.enable_diagnostics = True
     sim = Simulation(
         bodies=make_random_bodies(N, seed=42),
         cfg=cfg,
@@ -70,5 +72,14 @@ if __name__ == "__main__":
     steps = 300  # keep short for profiling; we want function breakdown, not long runs
     softening = 1e-3
 
+
+    profile_case(
+        "Barnes–Hut theta=0.7",
+        N=1000,
+        steps=300,
+        dt=2e-3,
+        softening=1e-3,
+        solver=BarnesHutSolver(theta=0.7),
+    )
     profile_case("Direct", N=300, steps=steps, dt=dt, softening=softening, solver=DirectSolver())
-    profile_case("Barnes–Hut theta=0.7", N=1000, steps=steps, dt=dt, softening=softening, solver=BarnesHutSolver(theta=0.7))
+    

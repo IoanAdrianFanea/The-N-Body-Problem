@@ -1,5 +1,6 @@
 from code.nbody.bodies import Body
 from code.nbody.bodies import G
+import math
 
 class OctreeNode:
     def __init__(self, center, half_size):
@@ -80,36 +81,38 @@ class OctreeNode:
             self.total_mass = new_M
 
 
-    def compute_accelerations(self, body: Body, theta: float, softening):
+    def compute_accelerations(self, body: Body, theta: float, softening: float):
         total_mass = self.total_mass
-        if total_mass == 0.0 or (self.body is body and self.children is None):
+        children = self.children
+
+        if total_mass == 0.0 or (self.body is body and children is None):
             return (0.0, 0.0, 0.0)
 
-        bx, by, bz = body.x, body.y, body.z 
+        bx, by, bz = body.x, body.y, body.z
         cx, cy, cz = self.center_of_mass
 
         dx = cx - bx
         dy = cy - by
         dz = cz - bz
 
-        soft2 = softening * softening  
-        dist2 = dx*dx + dy*dy + dz*dz + soft2 
-
+        soft2 = softening * softening
+        dist2 = dx*dx + dy*dy + dz*dz + soft2
         if dist2 == 0.0:
             return (0.0, 0.0, 0.0)
 
+        sqrt = math.sqrt
+        dist = sqrt(dist2)
+
         s = self.half_size * 2.0
 
-      
-        if self.children is None or (s / (dist2 ** 0.5)) < theta:
-            inv_dist = 1.0 / (dist2 ** 0.5) 
+        if children is None or (s / dist) < theta:
+            inv_dist = 1.0 / dist
             inv_dist3 = inv_dist / dist2
             factor = G * total_mass * inv_dist3
-
-            return (factor * dx, factor * dy, factor * dz) 
+            return (factor * dx, factor * dy, factor * dz)
 
         ax = ay = az = 0.0
-        for child in self.children:
+        for child in children:
             if child.total_mass > 0.0:
                 cax, cay, caz = child.compute_accelerations(body, theta, softening)
                 ax += cax

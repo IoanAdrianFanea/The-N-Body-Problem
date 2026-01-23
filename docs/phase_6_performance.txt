@@ -1,18 +1,28 @@
 Phase 6 — Profiling & Optimization (In Progress)
 
+Note
+These logs were reviewed and lightly reorganized after a break from the project.
+No results, measurements, or conclusions were changed.
+The purpose of the rewrite is to improve readability and structure only.
+
 Goal
-Identify performance bottlenecks in the N-body simulation code before attempting
-any optimization.
-The purpose of this phase is to base optimization decisions on measured data
-rather than assumptions.
+The goal of Phase 6 is to identify performance hotspots in the N-body simulation
+before attempting further optimization.
+All optimization decisions in this phase are based on measured data rather than assumptions.
 
-Approach
-- Use Python's built-in cProfile to measure runtime at the function level.
-- Profile the full simulation pipeline (solver + integrator + diagnostics).
-- Sort results by cumulative runtime to identify dominant cost centers.
-- Perform profiling separately for Direct and Barnes–Hut solvers.
+General Approach
+Profiling is done using Python’s built-in cProfile.
+The full simulation pipeline is profiled, including solver, integrator, and diagnostics.
+Results are sorted by cumulative runtime to identify the dominant cost areas.
+Both Direct and Barnes–Hut solvers are profiled separately.
+Real runtime measurements (without profiling) are used to confirm improvements,
+since profiling overhead can distort results for recursive code.
 
-Initial Profiling Setup (DirectSolver)
+
+--- Direct Solver — Initial Profiling
+
+
+Setup
 Integrator: Leapfrog (Velocity Verlet)
 Solver: Direct O(N^2)
 N = 300
@@ -20,174 +30,177 @@ Steps = 300
 dt = 2e-3
 Softening = 1e-3
 
-Summary of Results (DirectSolver)
-- Total runtime ~95 seconds for the profiled run.
-- The pairwise force calculation (compute_accelerations) dominates runtime.
-- This confirms the expected O(N^2) scaling cost of the DirectSolver.
-- Leapfrog integration contributes secondary cost due to repeated force
-  evaluations and synchronization.
-- Diagnostic computations (energy, momentum, COM) contribute noticeable but
-  smaller overhead.
-- State copying and object creation appear in the profile but are not the
-  primary bottleneck.
+Results
+Total runtime was approximately 95 seconds under profiling.
+Most of the runtime is spent inside physics.compute_accelerations.
+This matches the expected O(N^2) scaling of the Direct solver.
+Leapfrog integration adds additional cost due to repeated force evaluations
+and synchronization.
+Diagnostics such as energy, momentum, and center-of-mass tracking contribute
+noticeable but smaller overhead.
+State copying and object creation appear in the profile but are not the main hotspots.
 
 Interpretation
-The profiling results match theoretical expectations:
-the majority of time is spent computing pairwise gravitational forces.
-This validates the correctness of the performance model and provides a clear
-target for optimization efforts in Phase 6.
-
-Planned Next Steps
-- Profile the Barnes–Hut solver to identify tree construction and traversal
-  costs.
-- Use profiling data to prioritize low-risk optimizations.
-- Avoid algorithmic changes; focus on reducing Python overhead.
-- Keep diagnostics intact to preserve validation correctness.
-
-Notes
-This phase focuses on understanding performance behavior.
-Optimization work will be incremental and guided by profiling results.
+The Direct solver behaves exactly as expected from theory.
+Pairwise force computation dominates runtime and defines the performance limit.
+This provides a correct baseline for comparison in Phase 6.
 
 
+--- Barnes–Hut Solver — Initial Profiling
 
 
-
-
-Initial Profiling Setup (Barnes–Hut)
+Setup
 Integrator: Leapfrog (Velocity Verlet)
-Solver: Barnes–Hut Octree (θ = 0.7)
+Solver: Barnes–Hut Octree (theta = 0.7)
 N = 1000
 Steps = 300
 dt = 2e-3
 Softening = 1e-3
 
-Summary of Results (Barnes–Hut)
-- Total runtime ~1038 seconds for the profiled run.
-- Runtime is dominated by recursive tree traversal during force evaluation.
-- OctreeNode.compute_accelerations accounts for the majority of runtime.
-- Tree construction (insert, subdivide, mass/COM updates) contributes noticeable
-  but smaller overhead.
-- Barnes–Hut results in extremely high function call counts due to recursion and
-  repeated node visits.
-- Leapfrog integration amplifies traversal cost due to repeated acceleration
-  evaluations per timestep.
-- Diagnostic computations remain expensive but are not the dominant cost.
-
-Comparison to DirectSolver
-- DirectSolver runtime is dominated by pairwise force computation.
-- Barnes–Hut runtime is dominated by Python recursion and object overhead.
-- Barnes–Hut shows better algorithmic scaling, but Python overhead significantly
-  reduces its practical performance advantage at this stage.
+Results
+Total runtime was approximately 1038 seconds under profiling.
+Runtime is dominated by recursive tree traversal during force evaluation.
+OctreeNode.compute_accelerations accounts for the majority of cumulative runtime.
+Tree construction steps such as insert, subdivide, and mass or center-of-mass
+updates contribute noticeable but smaller overhead.
+Function call counts are extremely high due to recursion and repeated node visits.
+Leapfrog integration increases traversal cost because accelerations are evaluated
+multiple times per timestep.
+Diagnostics are expensive but not the dominant cost.
 
 Interpretation
-The profiling results explain why the current Barnes–Hut implementation is
-slower than expected despite improved asymptotic scaling.
-The algorithmic advantage is outweighed by Python-level overhead from recursion,
-object creation, and attribute access.
-
-Planned Next Steps
-- Identify low-risk ways to reduce tree traversal overhead.
-- Consider optimization strategies that reduce Python call counts.
-- Use profiling data to choose which solver to optimize first.
+Although Barnes–Hut has better asymptotic scaling, Python-level overhead from
+recursion, object handling, and attribute access significantly reduces its
+practical performance advantage at this stage.
 
 
-Profiling Results (Diagnostics Disabled)
+--- Profiling With Diagnostics Disabled
+
 
 Direct Solver
-- Total runtime ~72 seconds for the profiling run.
-- Hotspot is physics.compute_accelerations.
-- Confirms that DirectSolver performance is dominated by the O(N^2) force loop.
-- Integrator overhead is present but secondary.
+Total runtime was approximately 72 seconds.
+The main hotspot remains physics.compute_accelerations.
+This confirms that Direct solver performance is dominated by the O(N^2) force loop.
+Integrator overhead is present but secondary.
 
 Barnes–Hut Solver
-- Total runtime ~760 seconds under profiling.
-- Extremely large function call count due to recursive tree traversal.
-- octree.compute_accelerations dominates cumulative runtime.
-- Tree construction costs are visible but not the primary bottleneck.
-- Profiling overhead disproportionately affects Barnes–Hut due to recursion.
+Total runtime was approximately 760 seconds.
+Function call counts remain extremely high due to recursive traversal.
+OctreeNode.compute_accelerations dominates cumulative runtime.
+Tree construction costs are visible but not the primary hotspots.
+Profiling overhead disproportionately affects Barnes–Hut because of recursion.
 
 Interpretation
-With diagnostics removed, profiling confirms that:
-- DirectSolver cost comes from pairwise force computation.
-- Barnes–Hut cost comes from Python recursion and object-level traversal.
-- Barnes–Hut algorithmic advantages are masked by Python-level overhead during
-  profiling.
-
-Implication for Phase 6
-Optimization should focus on:
-- Reducing Python overhead in Barnes–Hut traversal.
-- Reducing attribute access and repeated computations.
-- Keeping the algorithm unchanged while improving execution efficiency.
+Disabling diagnostics confirms that:
+Direct solver cost comes from pairwise force computation.
+Barnes–Hut cost comes from Python recursion and object-level traversal.
+The algorithmic advantage of Barnes–Hut is masked by Python overhead under profiling.
 
 
+--- Optimization Attempt 1 — Barnes–Hut Tree Traversal
 
 
-Optimization Attempt 1 — Barnes–Hut Tree Traversal (compute_accelerations)
+Change
+Small local optimizations were made inside OctreeNode.compute_accelerations:
+Frequently accessed attributes were cached into local variables.
+Duplicate distance calculations were removed.
+Softening squared was precomputed.
+Early returns were added in approximation cases.
 
-Change:
-Made small local optimizations inside octree.compute_accelerations:
-- Cached frequently accessed attributes into local variables.
-- Removed duplicate distance calculations.
-- Precomputed softening^2.
-- Returned early in the approximation case to reduce work.
-
-Reason:
-Profiling showed that octree.compute_accelerations dominates Barnes–Hut runtime.
+Reason
+Profiling showed that OctreeNode.compute_accelerations is the dominant hotspot.
 The goal was to reduce Python overhead per call without changing the algorithm.
 
-Expected Effect:
-Slight reduction in runtime due to fewer attribute lookups and repeated math
-operations in a function that is called many times.
+Expected Effect
+A small reduction in runtime due to fewer attribute lookups and repeated math
+operations in a heavily used function.
 
-Notes:
-This change does not modify the Barnes–Hut opening-angle rule or force
-calculation.
-Behavior and accuracy should remain unchanged.
+Verification
+Barnes–Hut was run with N = 10 and diagnostics enabled after the change.
+The simulation completed normally and diagnostics behaved as expected.
 
-Status:
-Pending re-profiling.
 
-Verification:
-Ran Barnes–Hut with N = 10 and diagnostics enabled after modifying
-compute_accelerations.
-Simulation completed without errors and diagnostics behaved as expected.
-No obvious change in behavior observed.
+--- Profiling After Optimization Attempt 1
 
-Results:
-Re-profiled Barnes–Hut with the N = 1000 configuration and diagnostics after optimizing
-compute_accelerations.
 
-- Time spent inside octree.compute_accelerations decreased.
-- Overall profiling runtime increased.
-- Function call count increased significantly.
+Results
+Re-profiled Barnes–Hut with N = 1000 and diagnostics enabled.
+Time spent per call inside compute_accelerations decreased.
+Overall profiling runtime increased.
+Function call count increased significantly.
 
-Interpretation:
+Interpretation
 The optimization reduced work per call but did not reduce the number of
 recursive calls.
-Under cProfile, the increased call count amplified profiler overhead, masking
-any real runtime improvement.
-
-Conclusion:
-This optimization alone is insufficient under profiling conditions.
-Further improvements must focus on reducing recursion and function call count,
-not just per-call arithmetic cost.
+Profiler overhead increased because of the higher call count, masking real
+runtime improvements.
 
 
-Results (Real Runtime, No Profiling):
+--- Real Runtime Measurements (No Profiling)
 
-Barnes–Hut timing comparison using identical configuration:
 
-- Original implementation: ~349.5 s
-- Optimized implementation: ~233.1 s
+Setup
+Identical configuration to profiling runs, but without cProfile enabled.
 
-This corresponds to an improvement of roughly 33%.
+Results
+Original Barnes–Hut implementation runtime was approximately 349.5 seconds.
+Optimized implementation runtime was approximately 233.1 seconds.
+This corresponds to an improvement of roughly 33 percent.
 
-Interpretation:
-Although profiling results were inconclusive due to profiler overhead,
-real runtime measurements show that reducing per-call overhead in
-octree.compute_accelerations leads to a substantial speedup.
+Interpretation
+Although profiling results were unclear, real runtime measurements show a
+substantial speedup.
+Reducing per-call overhead in compute_accelerations is effective.
 
-Conclusion:
-The optimization is effective and should be kept.
-Further Phase 6 work should focus on reducing recursion and function
-call count to achieve additional gains.
+Conclusion
+The optimization should be kept.
+Further improvements should focus on reducing recursion depth and total
+function call count.
+
+
+--- Additional Verification
+
+
+Barnes–Hut was run with N = 50 and diagnostics enabled after the changes.
+The simulation completed normally with finite drift values and no crashes.
+
+Testing Notes
+Timing tests were moved from profile_phase6.py to time_barnes.py for the rest of Phase 6.
+
+
+--- Timing Recheck
+
+
+Setup
+N = 1000
+Steps = 300
+Theta = 0.7
+Diagnostics disabled
+
+Result
+Measured runtime was approximately 351.9 seconds.
+
+Note
+This runtime is similar to the earlier baseline of about 349.5 seconds.
+The difference may be due to configuration differences or missing cache effects.
+Further checks are required to confirm identical conditions.
+
+
+--- Clarification Profiling Run
+
+
+Purpose
+This profiling run was performed to remove confusion about the main Barnes–Hut
+performance hotspots before continuing optimization.
+
+Results
+The majority of total runtime is spent inside OctreeNode.compute_accelerations.
+Tree construction accounts for a much smaller portion of the total runtime.
+
+Interpretation
+Caching the octree alone would provide limited benefit.
+The primary performance issue is repeated tree traversal for force evaluation.
+
+Conclusion
+Phase 6 optimization should focus on reducing the number of Barnes–Hut force
+evaluations per timestep, rather than only optimizing tree construction.

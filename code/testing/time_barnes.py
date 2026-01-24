@@ -7,6 +7,7 @@ from code.nbody.bodies import Body
 from code.nbody.engine import Simulation, SimulationConfig
 from code.nbody.integrators.leapfrog import LeapfrogIntegrator
 from code.nbody.solvers.barneshut import BarnesHutSolver
+from code.nbody.solvers.direct import DirectSolver
 
 
 def make_random_bodies(N, seed=42):
@@ -41,8 +42,20 @@ sim = Simulation(
     solver=BarnesHutSolver(theta=0.7),
 )
 
+sim2 = Simulation(
+    bodies=make_random_bodies(N),
+    cfg=cfg,
+    integrator=LeapfrogIntegrator(),
+    solver=DirectSolver(),
+)
+
 t0 = time.perf_counter()
 sim.run()
 t1 = time.perf_counter()
 
+t2 = time.perf_counter()
+sim2.run()
+t3 = time.perf_counter()
+
 print(f"Barnes–Hut runtime: {t1 - t0:.3f} s")
+print(f"Direct runtime: {t3 - t2:.3f} s")

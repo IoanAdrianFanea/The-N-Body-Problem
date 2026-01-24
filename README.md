@@ -7,7 +7,7 @@ physics-based N-body simulation engine with an emphasis on:
 - Numerical integration of Hamiltonian systems
 - Solver design and interchangeability
 - Scientific validation using conservation laws
-- Performance and scaling analysis
+- Performance profiling and scaling analysis
 
 The codebase is organized around clear separation of concerns:
 - Bodies store physical state only
@@ -18,7 +18,10 @@ The codebase is organized around clear separation of concerns:
 
 Current Status
 The project is under active development.
-Phases up to Barnes–Hut implementation and performance benchmarking are complete.
-Future phases will focus on optimization, visualization, and extended experiments.
+Phases up to Barnes–Hut implementation, validation, and targeted performance
+optimization are complete.
+Future phases will focus on visualization, interface improvements, and
+additional optimization experiments.
 
-This repository emphasizes clarity, correctness, and reasoning over premature optimization.
+This repository emphasizes clarity, correctness, and reasoning over
+premature optimization.

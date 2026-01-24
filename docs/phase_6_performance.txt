@@ -19,6 +19,8 @@ Real runtime measurements (without profiling) are used to confirm improvements,
 since profiling overhead can distort results for recursive code.
 
 
+
+
 --- Direct Solver — Initial Profiling
 
 
@@ -97,6 +99,8 @@ Barnes–Hut cost comes from Python recursion and object-level traversal.
 The algorithmic advantage of Barnes–Hut is masked by Python overhead under profiling.
 
 
+
+
 --- Optimization Attempt 1 — Barnes–Hut Tree Traversal
 
 
@@ -140,7 +144,7 @@ runtime improvements.
 
 
 Setup
-Identical configuration to profiling runs, but without cProfile enabled.
+Identical configuration to profiling runs, but without cProfile enabled (time_barnes.py).
 
 Results
 Original Barnes–Hut implementation runtime was approximately 349.5 seconds.
@@ -158,7 +162,7 @@ Further improvements should focus on reducing recursion depth and total
 function call count.
 
 
---- Additional Verification
+--- Additional Verification (profile_phase6.py)
 
 
 Barnes–Hut was run with N = 50 and diagnostics enabled after the changes.
@@ -186,7 +190,7 @@ The difference may be due to configuration differences or missing cache effects.
 Further checks are required to confirm identical conditions.
 
 
---- Clarification Profiling Run
+--- Clarification Profiling Run (profile_phase6.py)
 
 
 Purpose
@@ -204,3 +208,70 @@ The primary performance issue is repeated tree traversal for force evaluation.
 Conclusion
 Phase 6 optimization should focus on reducing the number of Barnes–Hut force
 evaluations per timestep, rather than only optimizing tree construction.
+
+
+--- Clarification Profiling Run 2 (profile_phase6.py)
+
+
+Setup
+Same configuration.
+
+Purpose
+Second profiling run was performed with the last optimised implementation of compute_accelerations. 
+Previous run used old implementation of compute_accelerations.
+
+Results
+Same results achieved.
+
+
+
+
+
+
+--- Optimization Attempt 2 — Eliminating Redundant Barnes–Hut Force Evaluations
+
+
+Change
+Modified Leapfrog integration to cache Barnes–Hut accelerations and reuse them
+between the integration step and synchronization.
+Accelerations computed during the kick stage are stored on the system state and
+reused during synchronize instead of recomputing forces.
+
+
+Reason
+Profiling showed that Barnes–Hut force evaluation was being executed multiple
+times per timestep.
+This resulted in repeated octree traversal at identical positions.
+The goal was to reduce the number of calls to octree.compute_accelerations
+without changing the Barnes–Hut algorithm.
+
+
+Expected Effect
+A significant reduction in total runtime by eliminating one full Barnes–Hut
+tree traversal per timestep.
+
+
+Verification
+Barnes–Hut was run with small N and diagnostics enabled after the change.
+The simulation completed normally and diagnostics behaved as expected.
+
+
+Results (profile_phase6.py)
+Re-profiled Barnes–Hut with the same configuration as previous profiling runs.
+Total profiled runtime decreased substantially.
+The number of function calls dropped significantly.
+octree.compute_accelerations remains the dominant hotspot but is called fewer
+times per timestep.
+
+
+Interpretation
+Caching accelerations successfully removed redundant Barnes–Hut force
+evaluations.
+The remaining runtime cost now corresponds to the minimum required tree
+traversal per timestep.
+
+
+Conclusion
+This optimization is effective and should be kept.
+Further Phase 6 work should focus on reducing the cost of the remaining
+Barnes–Hut traversal or transitioning to lower-level optimizations.

@@ -24,7 +24,7 @@ class LeapfrogIntegrator(Integrator):
             vz_half = b.vz + 0.5 * dt * az[i]
             new_bodies.append(Body(b.m, b.x, b.y, b.z, vx_half, vy_half, vz_half))
 
-        return SystemState(new_bodies)
+        return SystemState(new_bodies, accel=(ax, ay, az))
 
     def step(self, state, cfg, accel_fn):
         bodies = state.bodies
@@ -53,7 +53,7 @@ class LeapfrogIntegrator(Integrator):
             vz_new = b.vz + dt * az_new[i]
             new_bodies.append(Body(b.m, b.x, b.y, b.z, vx_new, vy_new, vz_new))
 
-        return SystemState(new_bodies)
+        return SystemState(new_bodies, accel=(ax_new, ay_new, az_new))
 
     def synchronize(self, state, cfg, accel_fn):
         """
@@ -63,7 +63,10 @@ class LeapfrogIntegrator(Integrator):
         bodies = state.bodies
         dt = cfg.dt
 
-        ax, ay, az = accel_fn(bodies)
+        if state.accel is not None:
+            ax, ay, az = state.accel
+        else:
+            ax, ay, az = accel_fn(bodies)
 
         synced = []
         for i, b in enumerate(bodies):

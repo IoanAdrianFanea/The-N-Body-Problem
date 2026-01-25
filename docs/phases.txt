@@ -24,19 +24,32 @@ Phase 4 — Barnes–Hut Solver (Complete)
 - Theta-based force approximation
 - Accuracy vs approximation validation
 
-Phase 5 — Performance & Scaling (Current)
+Phase 5 — Performance & Scaling (Complete)
 - Runtime scaling analysis
 - Direct vs Barnes–Hut crossover
 - Accuracy vs theta tradeoffs
 
-Phase 6 — Optimization (Planned)
-- NumPy vectorization
-- Possible Numba acceleration
+Phase 6 — Profiling & Optimization (Complete)
+- Runtime profiling with cProfile
+- Identification of true performance bottlenecks
+- Barnes–Hut traversal optimizations
+- Elimination of redundant force evaluations
+- Performance validation via real runtime measurements
 
 Phase 7 — Visualization & Interface (Planned)
-- Improved plotting
+- Improved 2D and 3D plotting
 - Real-time animation
+- Reproducible simulation scenes
+- Diagnostic visualization (energy, momentum, COM drift)
 
 Phase 8 — Advanced Extensions (Optional)
-- Machine learning experiments
-- Controlled dynamical systems
+- Further performance optimizations (e.g. NumPy, Numba)
+- Alternative physics models or integrators
+- Exploratory or research-oriented extensions
+
+Phase 9 — Project Consolidation & Documentation (Planned)
+- Normalize documentation structure and wording across all phases
+- Add retrospective summaries for earlier phases
+- Improve cross-referencing between documentation files
+- Unify templates for plans, logs, and change tracking where appropriate
+- Prepare the project for portfolio presentation without altering results

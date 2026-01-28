@@ -1,1 +1,32 @@
 -- This document records a brief summary during implementation of Phase 7 that is reviewed at the end of the phase. --
+
+
+PHASE 7 – SUMMARY (Draft)
+
+OBJECTIVE
+- 
+
+WHAT WAS ADDED
+- 
+
+VISUALIZATION (PLOTS + ANIMATION)
+- 
+
+INTERFACE (RUNNING THE PROJECT)
+- 
+
+KEY DECISIONS
+- 
+
+LIMITATIONS
+- 
+
+HOW TO RUN (FINAL)
+- 
+
+RESULTS / EXAMPLES (FINAL)
+- 
+
+NEXT STEPS
+- 
+

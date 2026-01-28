@@ -1,0 +1,127 @@
+PHASE 7 – VISUALIZATION AND INTERFACE
+Initial Plan + Workflow
+
+OBJECTIVE
+Phase 7 improves the project presentation and usability by adding reproducible demo scenes, a single command-line runner, and clear visual outputs (plots + optional animation). The physics model, solvers, and integrators remain unchanged.
+
+SCOPE
+This phase includes:
+- Predefined simulation scenes (repeatable initial conditions)
+- A command-line entry point to run demos without editing source code
+- Plot outputs for trajectories and diagnostic drift
+- Optional matplotlib animation (2D default, 3D optional)
+
+PLANNED COMPONENTS
+
+1) Simulation Scenes
+A small set of predefined systems for consistent demonstrations:
+- Two-body orbit system
+- Three-body system (chaotic behaviour)
+- Random N-body cluster
+- Optional disk / galaxy-like distribution (time permitting)
+
+Scenes will be reproducible using fixed parameters or a seeded random generator.
+
+2) Demo Runner (Command-Line)
+A standalone script acts as the main entry point for running simulations.
+
+Planned CLI features:
+- Scene selection
+- Solver selection (Direct or Barnes–Hut)
+- Integrator selection (Euler or Leapfrog)
+- Parameter control (dt, steps, N, θ, softening)
+- Output control (save/show, output folder, filenames)
+- Optional animation controls (enable/disable, 2D/3D, sampling interval)
+
+3) Visualization Outputs (Plots)
+Plots generated from simulation results:
+- Final position plot (default: XY projection)
+- Energy drift plot over time
+- Optional momentum / angular momentum drift plots
+
+Plots are intended for clear inspection and portfolio screenshots.
+
+4) Animation (Matplotlib)
+A basic matplotlib animation will be supported for demonstration.
+
+Design approach:
+- Simulation runs normally.
+- Positions are recorded every K steps (sampling), producing frames.
+- Animation plays recorded frames after the run completes.
+
+Animation modes:
+- Default: 2D (XY projection) for clarity and performance
+- Optional: 3D animation mode (intended for small systems due to rendering cost)
+- Optional: static 3D plot of final state regardless of animation mode
+
+5) Output Management
+All outputs are saved to a dedicated outputs directory.
+File naming includes scene and configuration details (scene, solver, integrator, N, θ).
+
+NON-GOALS
+Out of scope for Phase 7:
+- GUI frameworks
+- Real-time interactive rendering tied to simulation steps
+- Performance optimisation work (unless animation becomes unusable)
+- Major refactoring of solvers or integrators
+
+DOCUMENTATION AND LOGGING
+Phase 7 summary file is used as a rough working log during development.
+At the end of the phase, the summary is cleaned into a final write-up and supported by the main documentation file.
+
+SUCCESS CRITERIA
+Phase 7 is complete when:
+- Simulations can be run using one command-line script
+- At least three predefined scenes are available
+- Final position plot and energy drift plot are generated and saved
+- 2D matplotlib animation works for demo-sized systems
+- 3D mode is optional (implemented if time allows) or clearly documented if not included
+- The project can be demonstrated without modifying source files
+
+PHASE 7 DOCUMENTATION STRUCTURE
+
+1) phase_7_changes.txt
+- Used during development
+- Tracks detailed changes and reasoning
+- Updated after each implementation step
+
+2) phase_7_summary.txt
+- High-level phase summary 
+- Cleaned and written at the end of Phase 7
+- Intended for portfolio / review
+
+3) phase_7_performance.txt
+- this may be necessary if testing becomes large
+- if so, testing for phase 7 is moved from EXPERIMENT_LOG to its own testing file
+
+INITIAL WORKFLOW (HOW WORK WILL BE DONE)
+
+1) Setup and structure
+- Create Phase 7 summary file (rough log format)
+- Create /outputs directory (tracked or with placeholder file)
+
+2) Implement in small steps (commit-based)
+- Step A: Add scenes module (two_body, three_body, cluster, optional disk)
+- Step B: Add demo runner script with argparse (run without plots first)
+- Step C: Add plotting utilities (final XY + energy drift)
+- Step D: Add frame recording (sample every K steps)
+- Step E: Add 2D animation using recorded frames
+- Step F (optional): Add 3D final plot and optional 3D animation mode
+
+3) Testing after each step
+- Run small N tests (N <= 50) to confirm correctness and visuals
+- Run medium N tests (N ~ 500–2000) to confirm Barnes–Hut demos and plot speed
+- Confirm output files are generated with correct naming
+
+4) Logging while building
+- After each step, add to Phase 7 changes:
+  - what changed (files)
+  - reasons
+  - what worked
+  - issues / fixes 
+  - what has been kept (if not why)
+  - next action
+
+5) End-of-phase consolidation
+- Rewrite Phase 7 summary into a clean final summary
+- Add short “How to run demos” section to README or documentation file

@@ -51,5 +51,6 @@ Phase 9 — Project Consolidation & Documentation (Planned)
 - Normalize documentation structure and wording across all phases
 - Add retrospective summaries for earlier phases
 - Improve cross-referencing between documentation files
+- add method hits 
 - Unify templates for plans, logs, and change tracking where appropriate
 - Prepare the project for portfolio presentation without altering results

@@ -52,3 +52,62 @@ LEARNING
 
 
 
+[Step B - Demo Runner (CLI)]
+
+OBJECTIVE
+- Introduce a command-line interface to run N-body simulations without modifying source code.
+- Provide a reproducible and user-friendly way to select scenes, solvers, and integrators.
+- Establish a stable interface layer for future visualization and plotting features.
+
+WHAT WAS ADDED
+- Added a command-line entry point (code/nbody/cli.py) using argparse.
+- Implemented a `run` command to execute simulations with configurable parameters.
+- Implemented a `list-scenes` command to list available predefined scenes.
+- Added CLI arguments for scene, solver, integrator, timestep, steps, softening, and Barnes–Hut theta.
+- Added input validation for timestep and number of steps.
+- Added an optional energy diagnostics flag.
+- Added placeholder flags for plotting and animation (not implemented yet).
+
+VISUALIZATION (PLOTS + ANIMATION)
+- No visualization implemented at this stage.
+- Plotting and animation flags are defined but act as placeholders.
+- Visualization functionality is deferred to Step C.
+
+INTERFACE (RUNNING THE PROJECT)
+- Simulations can be executed directly from the command line.
+- Default parameters allow a simulation to run without specifying arguments.
+- Scene discovery is supported via the `list-scenes` command.
+- The CLI cleanly separates user interaction from simulation logic.
+
+KEY DECISIONS
+- Used a single `run` command with configuration flags rather than multiple stateful commands.
+- Designed the CLI to be stateless, with each invocation fully defining a simulation run.
+- Provided explicit default parameters for scenes that require arguments.
+- Performed validation at the CLI level instead of in the simulation core.
+- Prioritized clarity and reproducibility over exposing all possible configuration options.
+
+LIMITATIONS
+- Scene-specific parameters are not yet exposed through the CLI.
+- Plotting and animation functionality is not implemented.
+- CLI output is limited to basic runtime summaries.
+
+HOW TO RUN (FINAL)
+- python -m code.nbody.cli run
+- python -m code.nbody.cli run --scene disk --solver barneshut --energy
+- python -m code.nbody.cli list-scenes
+
+RESULTS / EXAMPLES (FINAL)
+- All predefined scenes run successfully via the CLI.
+- Solvers and integrators integrate correctly with the CLI runner.
+- Energy diagnostics can be enabled or disabled per run.
+
+NEXT STEPS
+- Implement plotting utilities for final-state visualization and energy drift.
+- Connect the `--plots` flag to visualization code.
+- Extend CLI output to save figures and results to disk.
+
+LEARNING
+- Developed a clearer understanding of designing stateless, reproducible CLIs.
+- Improved familiarity with argparse subcommands and argument scoping.
+- Learned to separate user-facing interfaces from core simulation logic.
+- Reinforced the importance of defaults and validation in scientific software.

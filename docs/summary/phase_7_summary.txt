@@ -52,6 +52,8 @@ LEARNING
 
 
 
+
+
 [Step B - Demo Runner (CLI)]
 
 OBJECTIVE
@@ -111,3 +113,143 @@ LEARNING
 - Improved familiarity with argparse subcommands and argument scoping.
 - Learned to separate user-facing interfaces from core simulation logic.
 - Reinforced the importance of defaults and validation in scientific software.
+
+
+
+
+
+[Step C - Plot Outputs + Diagnostics]
+
+OBJECTIVE
+- Add basic visual outputs to inspect runs quickly (final positions + energy drift).
+- Save outputs to disk so runs are easy to compare and use in the report.
+
+WHAT WAS ADDED
+- code/nbody/viz.py with plotting helpers and output folder creation.
+- CLI integration: --plots generates and saves figures to outputs/<run_dir>/.
+- Saved plots:
+  - final_xy_full.png
+  - final_xy_zoom.png
+  - energy_drift.png
+
+VISUALIZATION (PLOTS + ANIMATION)
+- Implemented static Matplotlib plots only.
+- Added full vs zoomed XY plots to handle outliers/escapers.
+- Energy drift uses log scale so large ranges are readable.
+
+INTERFACE (RUNNING THE PROJECT)
+- Plots are enabled through CLI: --plots.
+- Output is stored in a timestamped folder in outputs/.
+
+KEY DECISIONS
+- Keep plotting separate from CLI (CLI calls functions in viz.py).
+- Compute energy drift using a stable normalisation (E_scale) so it remains meaningful.
+
+LIMITATIONS
+- Only static plots (no animation yet in Step C).
+- Energy drift depends on numerical stability (dt/softening/scene choices).
+
+HOW TO RUN (FINAL)
+- python -m code.nbody.cli run --scene disk --solver barneshut --integrator leapfrog --plots
+
+RESULTS / EXAMPLES (FINAL)
+- Plots made it easy to identify unstable configs and compare solvers.
+- Direct vs Barnes–Hut comparisons confirmed stability depends strongly on dt/softening.
+
+NEXT STEPS
+- Record sampled frames for animation (Step D)
+- Add 2D animation playback via CLI (Step E)
+
+LEARNING
+- Learned how to structure output folders and save reproducible run artifacts.
+- Learned that plotting can reveal numerical instability quickly.
+
+
+
+
+
+[Step D - Frame Sampling for Animation]
+
+OBJECTIVE
+- Add lightweight frame recording so animations don’t require full state history.
+
+WHAT WAS ADDED
+- record_frames and frame_every configuration options.
+- frames list storing sampled (x,y,z) positions.
+- Initial frame capture at the start of the simulation.
+
+VISUALIZATION (PLOTS + ANIMATION)
+- No animation displayed yet in Step D.
+- Step D prepares data for Step E animation.
+
+INTERFACE (RUNNING THE PROJECT)
+- Frames are recorded internally when enabled (later exposed in CLI in Step E).
+
+KEY DECISIONS
+- Keep state_history for diagnostics, but use frames for animation (positions only).
+- Make sampling configurable with frame_every.
+
+LIMITATIONS
+- Frame recording is positions only (no velocities).
+- Frame sampling is fixed-rate (no adaptive sampling).
+
+HOW TO RUN (FINAL)
+- Not user-facing until Step E (animation flag).
+
+RESULTS / EXAMPLES (FINAL)
+- Frames recorded successfully and used as animation input in Step E.
+
+NEXT STEPS
+- Implement animation playback + CLI controls (Step E)
+
+LEARNING
+- Better understanding of separating “scientific record” vs “rendering data”.
+
+
+
+
+
+[Step E - 2D Animation via CLI + Scene Updates]
+
+OBJECTIVE
+- Add a simple 2D XY animation to demonstrate simulations from the CLI.
+- Ensure default scenes behave sensibly in the chosen unit system (G = 4*pi^2).
+
+WHAT WAS ADDED
+- animate_xy(...) using matplotlib.animation.FuncAnimation.
+- CLI flags:
+  - --animate
+  - --frame-every
+  - --interval
+- Scene updates:
+  - two_body now chooses a sensible orbit speed by default.
+  - three_body switched to a stable figure-eight setup.
+  - random_cluster can be virialised so it stays roughly bound.
+  - disk rotation speed increased for a better demo.
+
+VISUALIZATION (PLOTS + ANIMATION)
+- Animation: 2D scatter animation using sampled frames.
+- Playback speed controlled via interval (visual only) and frame_every (sampling).
+
+INTERFACE (RUNNING THE PROJECT)
+- python -m code.nbody.cli run --scene two_body --animate
+- python -m code.nbody.cli run --scene disk --solver barneshut --dt 0.0002 --softening 0.01 --animate --frame-every 5 --interval 100
+
+KEY DECISIONS
+- Keep animation 2D-only (simpler + faster).
+- Keep physics constant G unchanged; fix scene initial conditions instead.
+- Keep comments/docstrings short and readable.
+
+LIMITATIONS
+- Animation currently shows only XY (no 3D view).
+- Saving animations to video/GIF not implemented (optional future step).
+
+NEXT STEPS
+- (Optional) Add --save-gif / --save-mp4.
+- (Optional) Add 3D final plot and optional 3D animation mode
+- (Optional) Make simulation more aesthetically pleasing 
+- Final Phase 7 documentation + example commands in README.
+
+LEARNING
+- Learned the difference between “simulation time” and “playback speed”.
+- Learned that unit choices affect what “reasonable” initial velocities look like.

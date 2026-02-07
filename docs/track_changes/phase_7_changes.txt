@@ -27,6 +27,9 @@ NEXT ACTION
 - Implement demo runner (CLI)
 
 
+
+
+
 DATE
 04/02/2026
 [Step B – Demo Runner (CLI)]
@@ -65,3 +68,125 @@ WHAT HAS BEEN KEPT:
 NEXT ACTION:
 - Implement plotting utilities (final XY snapshot + energy drift)
 - Wire --plots flag to visualization code (Phase 7 Step C)
+
+
+
+
+
+DATE
+05/02/2026
+[Step C – Plot Outputs + Diagnostics]
+
+WHAT CHANGED:
+- Added/updated code/nbody/viz.py for plotting utilities and output saving.
+- Wired the CLI --plots flag to generate and save figures into outputs/<timestamped_run_dir>/.
+- Added plots:
+  - final_xy_full.png (full view, includes escapers)
+  - final_xy_zoom.png (clipped view for readability)
+  - energy_drift.png (energy drift over time)
+
+REASONS:
+- Make runs easier to inspect without manual debugging.
+- Provide visual evidence of stability/instability (especially for disk/cluster scenes).
+- Save outputs in a consistent place for reports and demos.
+
+WHAT WORKED:
+- Output folder structure is clear and reproducible (timestamped run directories).
+- Full + zoom plots solved the “one escaper ruins the scale” problem.
+- Energy drift plot helped diagnose unstable parameter choices.
+
+ISSUES / FIXES:
+- Energy drift originally looked “broken” because the system can be numerically unstable
+  (large dt / low softening) and because normalisation can be misleading.
+- Fixed/updated energy drift calculation to use a stable scale:
+  - E_scale = max(|E0|, |K0| + |U0|, eps)
+  - drift = |E - E0| / E_scale
+- Also confirmed stability by comparing Direct vs Barnes–Hut with the same dt/softening.
+
+WHAT HAS BEEN KEPT:
+- Plots are simple Matplotlib (no extra dependencies).
+- Plotting code lives in viz.py and the CLI only calls functions (separation of concerns).
+
+NEXT ACTION:
+- Add frame sampling for animation (Step D)
+- Add CLI animation playback (Step E)
+
+
+
+
+
+DATE
+07/02/2026
+[Step D – Frame Sampling for Animation]
+
+WHAT CHANGED:
+- Added frame recording support in Simulation/SimulationConfig:
+  - record_frames (bool)
+  - frame_every (int)
+- Recorded the initial frame during simulation initialization.
+- Recorded sampled frames during stepping (every frame_every steps).
+- Cleared frames at the start of each run to avoid mixing runs.
+
+REASONS:
+- Animation should not require storing every full SystemState.
+- Sampling keeps memory reasonable and makes animation fast enough for demos.
+
+WHAT WORKED:
+- Frames are lightweight (positions only).
+- Sampling rate is configurable and independent from diagnostics.
+
+ISSUES / FIXES:
+- Without recording the initial frame, animation starts “mid-run” (fixed by saving frame 0).
+- Without clearing frames, repeated runs could append (fixed with frames.clear()).
+
+WHAT HAS BEEN KEPT:
+- state_history is still available for diagnostics, but animation uses frames (clean separation).
+
+NEXT ACTION:
+- Implement a 2D XY animation function and expose it via CLI (Step E)
+
+
+
+
+
+DATE
+07/02/2026
+[Step E – 2D Animation via CLI + Scene Fixes]
+
+WHAT CHANGED:
+- Implemented animate_xy(...) in code/nbody/viz.py using matplotlib FuncAnimation.
+- Updated CLI:
+  - --animate (show animation after simulation)
+  - --frame-every (controls sampling)
+  - --interval (controls playback speed)
+- Tuned scenes to match the project’s unit system (G = 4*pi^2):
+  - two_body now auto-computes a sensible orbit speed if v is not provided.
+  - three_body changed to a stable “figure-eight” setup and velocities scaled by sqrt(G).
+  - random_cluster can be virialised (velocity rescale to make it roughly bound).
+  - disk default v_scale increased so it rotates instead of instantly collapsing for demos.
+- Cleaned up docstrings/comments to be shorter and more “student style”.
+
+REASONS:
+- Make Phase 7 demos visual and easy to run from one command.
+- Fix confusing behaviour caused by using G=4*pi^2 with scene velocities tuned for G=1.
+- Make the code easier to read and explain in the report.
+
+WHAT WORKED:
+- Animations run for two_body / disk / figure-eight three_body.
+- Playback speed can be controlled without changing physics (interval + frame_every).
+- Scenes now behave closer to what the user expects for demo purposes.
+
+ISSUES / FIXES:
+- Some scenes initially “collapsed then scattered” or “slingshotted” due to velocity mismatch with G.
+- Fixed by adjusting scene initial velocities rather than changing G.
+- Animation initially looked “too fast” (fixed by using interval/frame sampling, not physics changes).
+
+WHAT HAS BEEN KEPT:
+- Animation is 2D (XY) only for simplicity.
+- Scene functions stay simple and reproducible (seeded randomness).
+
+NEXT ACTION:
+- (Optional) Add saving animations to GIF/MP4.
+- (Optional) Make simulation more aesthetically pleasing 
+- (Optional) Add 3D final plot and optional 3D animation mode
+- Finalise Phase 7 summary + README examples.

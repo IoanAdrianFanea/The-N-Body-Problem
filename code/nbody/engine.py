@@ -26,7 +26,7 @@ class SimulationConfig:
         self.diagnostics_every: int = 1
         self.enable_diagnostics: bool = False
         self.record_frames: bool = False
-        self.frame_every : int = 5
+        self.frame_every : int = 1
 
 
 class Simulation:

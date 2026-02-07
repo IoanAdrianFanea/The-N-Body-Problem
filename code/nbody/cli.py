@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from typing import Optional, Sequence
 
-from code.nbody.viz import make_run_dir, save_stepc_outputs
+from code.nbody.viz import make_run_dir, save_stepc_outputs, animate_xy
 
 
 from code.nbody.engine import Simulation, SimulationConfig
@@ -146,13 +146,27 @@ def build_parser() -> argparse.ArgumentParser:
     output_group.add_argument(
         "--animate",
         action="store_true",
-        help="Enable animation (not implemented yet)",
+        help="Show 2D XY animation after running",
+    )
+
+    output_group.add_argument(
+        "--frame-every",
+        type=int,
+        default=5,
+        help="Record one animation frame every N steps (defaults to 5)",
+    )
+    output_group.add_argument(
+        "--interval",
+        type=int,
+        default=20,
+        help="Animation frame interval in ms (defaults to 20)",
     )
 
     subparsers.add_parser(
         "list-scenes",
         help="List available predefined scenes",
     )
+    
 
     return parser
 
@@ -203,6 +217,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         )
         cfg.enable_diagnostics = args.energy or args.plots
 
+        cfg.record_frames = args.animate
+        cfg.frame_every = args.frame_every
+
         sim = Simulation(
             bodies=bodies,
             cfg=cfg,
@@ -236,6 +253,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print(f"\nPlots saved to: {run_dir}")
             for path in saved_files:
                 print(f"  - {path.name}")
+
+        if args.animate:
+            title_prefix = (
+                f"{args.scene} | {args.solver} | {args.integrator} | "
+                f"N={len(sim.state.bodies)}"
+            )
+            animate_xy(
+                sim.frames,
+                out_path=None,
+                interval=args.interval,
+                title=title_prefix,
+                show=True,
+            )
 
 
         print("\nSimulation complete")

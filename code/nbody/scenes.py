@@ -2,39 +2,68 @@ import math
 import random
 from typing import List
 
-from code.nbody.bodies import Body
+from code.nbody.bodies import Body, G
+from code.nbody.physics import compute_kinetic_energy, compute_potential_energy
 
 
-def two_body(separation: float = 1.0, mass: float = 1.0, v: float = 0.5) -> List[Body]:
+def two_body(separation: float = 1.0, mass: float = 1.0, v: float | None = None):
     """
-    Simple two-body setup (rough orbit-like motion).
-    Bodies are placed at +/- separation/2 on x-axis with opposite y-velocities.
+    Two bodies set up to orbit each other.
+
+    If v isn't given, I pick a reasonable orbit speed for my units (G = 4*pi^2).
     """
+    if v is None:
+        v = math.sqrt(G * mass / (2.0 * separation))
+
     x = separation / 2.0
-    b1 = Body(mass, -x, 0.0, 0.0, 0.0, -v, 0.0)
-    b2 = Body(mass,  x, 0.0, 0.0, 0.0,  v, 0.0)
-    return [b1, b2]
+    return [
+        Body(mass, -x, 0.0, 0.0, 0.0, -v, 0.0),
+        Body(mass,  x, 0.0, 0.0, 0.0,  v, 0.0),
+    ]
 
 
 def three_body(scale: float = 1.0, mass: float = 1.0) -> List[Body]:
     """
-    Simple three-body setup designed to show interesting/chaotic behaviour.
+    Figure-eight three-body setup (good for demos).
+
+    The standard values assume G=1, so I scale velocities to match my G.
     """
-    b1 = Body(mass, -1.0 * scale, 0.0, 0.0, 0.0, -0.2, 0.0)
-    b2 = Body(mass,  1.0 * scale, 0.0, 0.0, 0.0,  0.2, 0.0)
-    b3 = Body(mass,  0.0,  1.0 * scale, 0.0, 0.2, 0.0, 0.0)
-    return [b1, b2, b3]
+    vfac = math.sqrt(G)
+
+    # Standard figure-eight initial condition (for G=1)
+    x1, y1 = -0.97000436,  0.24308753
+    x2, y2 =  0.97000436, -0.24308753
+    x3, y3 =  0.0,         0.0
+
+    vx1, vy1 =  0.4662036850,  0.4323657300
+    vx2, vy2 =  0.4662036850,  0.4323657300
+    vx3, vy3 = -0.9324073700, -0.8647314600
+
+    return [
+        Body(mass, scale * x1, scale * y1, 0.0, vfac * vx1, vfac * vy1, 0.0),
+        Body(mass, scale * x2, scale * y2, 0.0, vfac * vx2, vfac * vy2, 0.0),
+        Body(mass, scale * x3, scale * y3, 0.0, vfac * vx3, vfac * vy3, 0.0),
+    ]
 
 
-def random_cluster(n: int, seed: int = 0, radius: float = 1.0, mass_min: float = 0.5, mass_max: float = 2.0, v_scale: float = 0.05) -> List[Body]:
+def random_cluster(
+    n: int,
+    seed: int = 0,
+    radius: float = 1.0,
+    mass_min: float = 0.5,
+    mass_max: float = 2.0,
+    v_scale: float = 0.05,
+    softening: float = 1e-2,
+    virialize: bool = True,
+) -> List[Body]:
     """
-    Random cluster of n bodies (seeded for reproducibility).
-    Positions are uniform in a cube [-radius, radius].
-    Velocities are small random values so the system does not instantly explode.
+    Random cloud of bodies.
+
+    If virialize=True, I rescale velocities so it stays roughly bound (more cluster-like).
     """
     rng = random.Random(seed)
-
     bodies: List[Body] = []
+
     for _ in range(n):
         x = rng.uniform(-radius, radius)
         y = rng.uniform(-radius, radius)
@@ -47,23 +76,43 @@ def random_cluster(n: int, seed: int = 0, radius: float = 1.0, mass_min: float =
         m = rng.uniform(mass_min, mass_max)
         bodies.append(Body(m, x, y, z, vx, vy, vz))
 
+    if virialize:
+        class _Cfg:
+            def __init__(self, softening: float):
+                self.softening = softening
+
+        cfg = _Cfg(softening)
+        K = compute_kinetic_energy(bodies)
+        U = compute_potential_energy(bodies, cfg)
+
+        if K > 0.0 and U != 0.0:
+            # Aim for 2K ~= |U| by scaling velocities
+            s = math.sqrt(abs(U) / (2.0 * K))
+            for b in bodies:
+                b.vx *= s
+                b.vy *= s
+                b.vz *= s
+
     return bodies
 
 
-def disk(n: int, seed: int = 0, radius: float = 5.0, mass: float = 1.0, v_scale: float = 0.4, thickness: float = 0.05 ) -> list[Body]:
+def disk(
+    n: int,
+    seed: int = 0,
+    radius: float = 5.0,
+    mass: float = 1.0,
+    v_scale: float = 2.5,
+    thickness: float = 0.05,
+) -> List[Body]:
     """
-    Rotating disk-like system (useful for animation demos).
+    Simple rotating disk for demos.
 
-    Bodies are distributed in a flat disk (mostly XY plane) with
-    velocities perpendicular to their radius, producing rotation.
-
-    This is a visual/demo setup, not a physically exact galaxy model.
+    Positions start in a flat disk, and velocities are tangential so it spins.
     """
     rng = random.Random(seed)
-    bodies = []
+    bodies: List[Body] = []
 
     for _ in range(n):
-        # radius sampled so density is higher near centre
         r = radius * math.sqrt(rng.random())
         theta = rng.uniform(0.0, 2.0 * math.pi)
 
@@ -71,13 +120,11 @@ def disk(n: int, seed: int = 0, radius: float = 5.0, mass: float = 1.0, v_scale:
         y = r * math.sin(theta)
         z = rng.uniform(-thickness, thickness)
 
-        # perpendicular velocity (rotation)
         speed = v_scale / math.sqrt(r + 0.1)
         vx = -speed * math.sin(theta)
         vy =  speed * math.cos(theta)
-        vz = 0.0
 
-        bodies.append(Body(mass, x, y, z, vx, vy, vz))
+        bodies.append(Body(mass, x, y, z, vx, vy, 0.0))
 
     return bodies
 

@@ -22,9 +22,11 @@ class SimulationConfig:
         self.timesteps = timesteps
         self.softening = softening
 
-        self.record_history: bool = True
+        self.record_history: bool = False
         self.diagnostics_every: int = 1
-        self.enable_diagnostics: bool = True
+        self.enable_diagnostics: bool = False
+        self.record_frames: bool = False
+        self.frame_every : int = 5
 
 
 class Simulation:
@@ -49,6 +51,8 @@ class Simulation:
 
         self.com_history = []
         self.com_drift = []
+        
+        self.frames = []
 
 
     def run(self):
@@ -78,6 +82,9 @@ class Simulation:
         if self.cfg.record_history:
             self.state_history.append(diag.copy()) #stores diagnostics
 
+        if self.cfg.record_frames:
+            self.frames.append([(b.x, b.y, b.z) for b in diag.bodies])
+
         if self.cfg.enable_diagnostics:
             K0 = compute_kinetic_energy(diag.bodies)
             U0 = compute_potential_energy(diag.bodies, self.cfg)
@@ -103,6 +110,9 @@ class Simulation:
 
         if self.cfg.record_history:
             self.state_history.append(diag.copy())
+
+        if self.cfg.record_frames and (step + 1) % self.cfg.frame_every == 0:
+            self.frames.append([(b.x, b.y, b.z) for b in diag.bodies])
 
         if self.cfg.enable_diagnostics and (step + 1) % self.cfg.diagnostics_every == 0:
             self._update_diagnostics(diag)
@@ -176,6 +186,8 @@ class Simulation:
 
         self.com_history.clear()
         self.com_drift.clear()
+
+        self.frames.clear()
 
 
     def show(self, x0, y0, x1, y1):

@@ -190,3 +190,51 @@ NEXT ACTION:
 - (Optional) Make simulation more aesthetically pleasing 
 - (Optional) Add 3D final plot and optional 3D animation mode
 - Finalise Phase 7 summary + README examples.
+
+
+
+
+
+
+DATE
+18/02/2026
+[Step E – Aesthetic Improvements (Space-Style Visualization Defaults)]
+
+WHAT CHANGED:
+- Updated 2D animation visuals in code/nbody/viz.py to use a consistent “space” theme by default:
+  - Black background and static starfield (small white points).
+  - Cleaner framing (equal aspect + fixed axis limits using robust percentile bounds to avoid edge clipping).
+  - Adjusted marker sizing to scale with particle count (small-N readable, large-N not overcrowded).
+- Simplified CLI behaviour:
+  - Introduced per-scene run presets (dt, steps, softening, frame sampling, interval).
+  - Ensured `run --scene X --animate` produces a stable demo without extra flags.
+  - Improved list-scenes output to display scene defaults and run presets.
+
+REASONS:
+- Make the project more portfolio-ready with a clean and consistent visual identity.
+- Reduce command complexity and avoid excessive CLI tuning.
+- Fix visual artefacts such as edge clipping and over-zoomed framing without changing physics.
+
+WHAT WORKED:
+- Animations are clearer and more cinematic with space-style background.
+- Disk and random_cluster no longer exhibit bodies visually “stuck” at plot boundaries.
+- Scene-specific presets provide stable motion without manual dt/softening adjustments.
+- Minimal command usage now produces clean demo-quality output.
+
+ISSUES / FIXES:
+- Some scenes appeared too zoomed in or too zoomed out.
+- Resolved via percentile-based camera bounds with controlled padding.
+- Large-N scenes looked cluttered when marker size was increased.
+- Resolved by scaling body size based on particle count.
+- Current issues faced with 'disk' scene, to be fixed in a second optimisation phase (due to length of runs)
+
+WHAT HAS BEEN KEPT:
+- 2D XY animation using matplotlib FuncAnimation.
+- Seeded scene generation for reproducibility.
+- Separation of physics, CLI, and visualization logic.
+
+NEXT ACTION:
+- (Optional) Add saving animations to GIF/MP4.
+- (Optional) Implement 3D animation mode.
+- Finalise Phase 7 summary and update README examples.
+

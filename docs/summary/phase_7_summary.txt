@@ -253,3 +253,55 @@ NEXT STEPS
 LEARNING
 - Learned the difference between “simulation time” and “playback speed”.
 - Learned that unit choices affect what “reasonable” initial velocities look like.
+
+
+
+
+
+[Step E – Aesthetic Improvements (Space-Style Defaults)]
+
+OBJECTIVE
+- Improve the visual presentation of simulations to make demos more polished and portfolio-ready.
+- Reduce command complexity by making animation and run settings scene-aware by default.
+- Fix visual artefacts (edge clipping, over-zooming, overcrowding) without changing physics.
+
+WHAT WAS ADDED
+- Space-style animation defaults in viz:
+  - Black background with static starfield.
+  - Equal aspect ratio and robust percentile-based camera bounds.
+  - Automatic body-size scaling based on number of particles.
+  - Removed glow and visual toggles to keep rendering clean and consistent.
+- Scene-based run presets in CLI:
+  - Per-scene defaults for dt, steps, softening, frame_every, and interval.
+  - Minimal command usage: `run --scene X --animate` produces a good demo.
+- Improved list-scenes output to display scene defaults and run presets.
+
+VISUALIZATION (PLOTS + ANIMATION)
+- 2D XY animation now uses consistent “space” theme by default.
+- Camera bounds computed using percentile-based limits to prevent bodies appearing stuck at edges.
+- Marker size adapts to N to maintain readability across small and large systems.
+
+INTERFACE (RUNNING THE PROJECT)
+- python -m code.nbody.cli run --scene two_body --animate
+- python -m code.nbody.cli run --scene disk --animate
+- python -m code.nbody.cli list-scenes
+
+KEY DECISIONS
+- Keep physics unchanged; improve presentation purely in visualization layer.
+- Use scene presets to avoid requiring manual dt/softening tuning for demos.
+- Keep animation 2D-only for simplicity and reliability.
+
+LIMITATIONS
+- Still limited to 2D XY projection.
+- No built-in saving of animations to GIF/MP4 yet.
+- Disk scene is visually tuned for demos, not a fully self-consistent galactic equilibrium model (to be fixed in extra optimisation phase).
+
+NEXT STEPS
+- (Optional) Add saving animations to GIF/MP4.
+- (Optional) Implement 3D final plot and 3D animation mode.
+- Finalise Phase 7 documentation and README examples.
+
+LEARNING
+- Learned how camera framing affects perceived simulation quality.
+- Understood the importance of separating physics logic from visualization logic.
+- Improved CLI usability by shifting complexity into scene-based presets.

@@ -238,3 +238,59 @@ NEXT ACTION:
 - (Optional) Implement 3D animation mode.
 - Finalise Phase 7 summary and update README examples.
 
+
+
+
+
+DATE
+19/02/2026
+[Step F – Animation Saving Implementation]
+
+WHAT CHANGED
+- Modified code/nbody/viz.py:
+  - Added save_animation(...) helper.
+  - Added GIF export via PillowWriter.
+  - Added MP4 export via FFMpegWriter.
+  - Updated animate_xy(...) to accept:
+    - out_path
+    - fps
+    - show flag
+  - Ensured animate_xy returns saved file path or None.
+  - Updated run logic:
+    - Ensured all bodies are plotted (previous version included tracer particle to test, however this was removed)
+- Modified code/nbody/cli.py:
+  - Added CLI flags:
+    --save-gif
+    --save-mp4
+    --fps
+    --no-show
+  - Updated run logic:
+    - Created output directory if plots OR animation saving enabled.
+    - Ensured plots and animations share the same folder.
+    - Prevented duplicate directory creation.
+
+REASONS
+- Avoid losing long simulation runs by forgetting to save.
+- Keep reproducible artifacts for demos and documentation.
+- Maintain separation between simulation logic and export logic.
+
+WHAT WORKED
+- GIF export works without additional dependencies.
+- MP4 export works when ffmpeg is available.
+- Saving and showing animation simultaneously works.
+- Saving without opening a window works (--no-show).
+- Output folder structure remains consistent.
+
+ISSUES / FIXES
+- Initially run_dir was not created before saving → fixed by creating it when needed.
+- Duplicate output folder creation in CLI → removed.
+- animate_xy could crash if saving was not enabled → fixed by initializing saved = None.
+
+WHAT HAS BEEN KEPT
+- Physics, integrators, and solvers unchanged.
+- 2D animation pipeline unchanged apart from export support.
+- Existing output folder naming convention retained.
+
+NEXT ACTION
+- (Optional) Implement 3D final plot and/or 3D animation mode.
+- Finalise Phase 7 documentation and README examples.

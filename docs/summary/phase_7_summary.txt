@@ -305,3 +305,66 @@ LEARNING
 - Learned how camera framing affects perceived simulation quality.
 - Understood the importance of separating physics logic from visualization logic.
 - Improved CLI usability by shifting complexity into scene-based presets.
+
+
+
+
+
+DATE
+19/02/2026
+[Step F – Animation Saving (GIF/MP4 Export via CLI)]
+
+OBJECTIVE
+- Allow animations to be saved so good runs are not lost.
+- Store animation files inside the same timestamped output folder as plots.
+- Keep saving logic cleanly separated from simulation and physics code.
+
+WHAT WAS ADDED
+- save_animation(...) helper in viz.py.
+- GIF saving using PillowWriter (no external dependency).
+- MP4 saving using FFMpegWriter (requires ffmpeg installed).
+- Extended animate_xy(...) to:
+  - Accept out_path parameter.
+  - Accept fps parameter.
+  - Support save-only mode via --no-show.
+- CLI flags:
+  - --save-gif
+  - --save-mp4
+  - --fps
+  - --no-show
+- Unified output folder creation:
+  - make_run_dir(...) now triggered if plots OR animation saving is enabled.
+  - Plots and animations saved in the same directory.
+
+VISUALIZATION (PLOTS + ANIMATION)
+- 2D XY animation can now:
+  - Display only
+  - Save only
+  - Display + save
+- Saved animations use the same space-style theme.
+- Files saved inside:
+  outputs/YYYYMMDD_scene_solver_integrator_Nxxx/
+
+INTERFACE (RUNNING THE PROJECT)
+- Show animation only:
+  python -m code.nbody.cli run --scene two_body --animate
+- Save GIF without showing:
+  python -m code.nbody.cli run --scene disk --animate --save-gif --no-show
+- Save MP4:
+  python -m code.nbody.cli run --scene random_cluster --animate --save-mp4 --no-show
+- Save plots + animation:
+  python -m code.nbody.cli run --scene disk --animate --save-gif --plots --no-show
+
+KEY DECISIONS
+- Keep export logic inside viz.py.
+- Avoid changing physics or simulation core.
+- Reuse existing timestamped output directory system.
+
+LIMITATIONS
+- MP4 requires ffmpeg installed on system.
+- Large-N scenes produce large GIF files.
+- Only 2D animation is currently exportable.
+
+NEXT STEPS
+- (Optional) Implement 3D final plot and/or 3D animation mode.
+- Finalise Phase 7 documentation and README examples.

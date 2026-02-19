@@ -7,7 +7,8 @@ from datetime import datetime
 
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib.animation import FuncAnimation
+from matplotlib.animation import FuncAnimation, PillowWriter
+
 
 
 # Simple plot defaults (keeps plots readable without repeating sizes everywhere)
@@ -182,13 +183,15 @@ def save_stepc_outputs(sim, run_dir: Path, title_prefix: str | None = None) -> l
     return saved
 
 
+
 def animate_xy(
     frames,
     out_path: str | Path | None = None,
     interval: int = 20,
     title: str | None = None,
     show: bool = True,
-) -> None:
+    fps: int = 30
+) -> Path |None:
     """
     2D animation (XY only), with a built-in space theme.
 
@@ -201,7 +204,7 @@ def animate_xy(
     xy = np.array([[(p[0], p[1]) for p in frame] for frame in frames], dtype=float)
     T, N, _ = xy.shape
 
-    main_xy = xy[:, :-1, :]
+    main_xy = xy
 
     if N <= 5:
         BODY_SIZE = 250        
@@ -245,12 +248,41 @@ def animate_xy(
 
     anim = FuncAnimation(fig, update, frames=T, interval=interval, blit=True, repeat=False)
 
+    saved = None
+
     if out_path is not None:
-        out_path = Path(out_path)
-        out_path.parent.mkdir(parents=True, exist_ok=True)
-        anim.save(out_path)
+        saved = save_animation(anim, out_path=out_path, fps=fps)
 
     if show:
         plt.show()
     else:
         plt.close(fig)
+
+    return saved
+
+
+
+
+
+def save_animation(anim, out_path: str | Path, fps: int = 30):
+    """
+    Save a matplotlib FuncAnimation to GIF/MP4 depending on extension.
+
+    - .gif uses PillowWriter (pure Python, usually easiest)
+    - .mp4 requires ffmpeg which is available on system
+    """
+    out_path = Path(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    ext = out_path.suffix.lower()
+    if ext == ".gif":
+        anim.save(str(out_path), writer=PillowWriter(fps=fps))
+        return out_path
+
+    if ext == ".mp4":
+        # ffmpeg required
+        from matplotlib.animation import FFMpegWriter
+        anim.save(str(out_path), writer=FFMpegWriter(fps=fps))
+        return out_path
+
+    raise ValueError(f"Unsupported extension '{ext}'. Use .gif or .mp4")

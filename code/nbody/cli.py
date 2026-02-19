@@ -188,6 +188,12 @@ def build_parser() -> argparse.ArgumentParser:
         help="List available scenes and their demo presets",
     )
 
+
+    output_group.add_argument("--save-gif", action="store_true", help="Save animation to outputs/... as GIF")
+    output_group.add_argument("--save-mp4", action="store_true", help="Save animation to outputs/... as MP4 (ffmpeg required)")
+    output_group.add_argument("--fps", type=int, default=30, help="FPS for saved animations (default: 30)")
+    output_group.add_argument("--no-show", action="store_true", help="Do not open animation window (useful when saving)")
+
     return parser
 
 
@@ -279,7 +285,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             f"N={len(sim.state.bodies)}"
         )
 
-        if args.plots:
+        saving_anim = args.animate and (args.save_gif or args.save_mp4)
+
+        run_dir = None
+        if args.plots or saving_anim:
             run_dir = make_run_dir(
                 outputs_dir="outputs",
                 scene=args.scene,
@@ -288,6 +297,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 n=len(sim.state.bodies),
             )
 
+        if args.plots:
             saved_files = save_stepc_outputs(
                 sim,
                 run_dir,
@@ -299,13 +309,24 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 print(f"  - {path.name}")
 
         if args.animate:
-            animate_xy(
+            out_path = None
+            if saving_anim:
+                if args.save_gif:
+                    out_path = run_dir / "anim_xy.gif"
+                elif args.save_mp4:
+                    out_path = run_dir / "anim_xy.mp4"
+
+            saved = animate_xy(
                 sim.frames,
-                out_path=None,
+                out_path=out_path,
                 interval=args.interval,
                 title=title_prefix,
-                show=True,
+                show=(not args.no_show),
+                fps=args.fps,
             )
+
+            if saved is not None:
+                print(f"Animation saved to: {saved}")
 
         print("\nSimulation complete")
         print(f"Scene:       {args.scene}")

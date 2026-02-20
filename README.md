@@ -1,3 +1,17 @@
+<p align="center">
+  <img src="assets/image.png" width="500">
+</p>
+
+<h1 align="center">The N-Body Problem</h1>
+
+<p align="center">
+  High-performance gravitational N-body simulation with Direct and Barnes–Hut solvers.<br>
+  3D support • Symplectic integration • Profiling & optimization • Visualization pipeline
+</p>
+
+---
+
+
 # Modular N-Body Simulation Engine (Python)
 
 A long-term portfolio project focused on building a modular,

@@ -223,14 +223,19 @@ def plot_frame_xyz(frame, filepath: str | Path, title: str | None = None) -> Non
 
 def save_snapshots_xyz(sim, run_dir: Path, title_prefix: str | None = None) -> list[Path]:
     saved: list[Path] = []
-    if sim.frames:
-        p0 = run_dir / "initial_xyz.png"
-        plot_frame_xyz(sim.frames[0], p0, title=f"{title_prefix} — Initial XYZ" if title_prefix else None)
-        saved.append(p0)
-    final_frame = [(b.x, b.y, b.z) for b in sim.state.bodies]
+    if not sim.frames:
+        return saved
+
+    # initial
+    p0 = run_dir / "initial_xyz.png"
+    plot_frame_xyz(sim.frames[0], p0, title=f"{title_prefix} — Initial XYZ" if title_prefix else None)
+    saved.append(p0)
+
+    # final
     p1 = run_dir / "final_xyz.png"
-    plot_frame_xyz(final_frame, p1, title=f"{title_prefix} — Final XYZ" if title_prefix else None)
+    plot_frame_xyz(sim.frames[-1], p1, title=f"{title_prefix} — Final XYZ" if title_prefix else None)
     saved.append(p1)
+
     return saved
 
 

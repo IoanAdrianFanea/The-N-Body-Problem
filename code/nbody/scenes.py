@@ -130,7 +130,31 @@ def disk(
     return bodies
 
 
+def benchmark_cluster(
+    n: int = 2500,
+    seed: int = 123,
+    radius: float = 5.0,
+    mass_min: float = 1e-3,
+    mass_max: float = 1e-2,
+    v_scale: float = 0.06,
+    virialize: bool = True,
+):
+    """
+    Large-N cluster intended for performance comparisons.
+    Default parameters aim for a roughly bound system (good for stable demos).
+    """
+    return random_cluster(
+        n=n,
+        seed=seed,
+        radius=radius,
+        mass_min=mass_min,
+        mass_max=mass_max,
+        v_scale=v_scale,
+        virialize=virialize,
+    )
+
+
 def list_scenes() -> List[str]:
-    return ["two_body", "three_body", "random_cluster", "disk"]
+    return ["two_body", "three_body", "random_cluster", "disk", "benchmark_cluster"]
 
 

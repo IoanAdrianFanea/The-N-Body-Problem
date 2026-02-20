@@ -12,7 +12,7 @@ from code.nbody.solvers.barneshut import BarnesHutSolver
 from code.nbody import scenes
 
 
-SCENES = ("two_body", "three_body", "random_cluster", "disk")
+SCENES = ("two_body", "three_body", "random_cluster", "disk", "benchmark_cluster")
 SOLVERS = ("direct", "barneshut")
 INTEGRATORS = ("euler", "leapfrog")
 
@@ -21,6 +21,7 @@ SCENE_KWARGS = {
     "three_body": dict(),
     "random_cluster": dict(n=500, seed=42, radius=3.0, mass_min=1e-3, mass_max=1e-2, v_scale=0.05),
     "disk": dict(n=300, seed=42, radius=5.0, mass=5e-2, v_scale=0.30, thickness=0.05),
+    "benchmark_cluster": dict(n=2500, seed=123, radius=5.0, mass_min=1e-3, mass_max=1e-2, v_scale=0.06, virialize=True),
 }
 
 RUN_PRESETS = {
@@ -28,6 +29,7 @@ RUN_PRESETS = {
     "three_body": dict(dt=0.002, steps=6000, softening=1e-3, frame_every=5, interval=30),
     "random_cluster": dict(dt=0.001, steps=4000, softening=0.01, frame_every=25, interval=10),
     "disk": dict(dt=0.001, steps=5000, softening=0.002, frame_every=15, interval=10),
+    "benchmark_cluster": dict(dt=0.001, steps=300, softening=0.01, frame_every=50, interval=10),
 }
 
 

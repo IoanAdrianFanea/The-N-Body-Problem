@@ -294,3 +294,61 @@ WHAT HAS BEEN KEPT
 NEXT ACTION
 - (Optional) Implement 3D final plot and/or 3D animation mode.
 - Finalise Phase 7 documentation and README examples.
+
+
+
+
+
+DATE
+20/02/2026
+[Step F – 3D Animation + 3D Snapshots (with Code Cleanup)]
+
+WHAT CHANGED
+- Added 3D animation support in code/nbody/viz.py:
+  - Implemented animate_xyz(...) using matplotlib 3D projection.
+  - Added robust percentile-based 3D camera bounds.
+  - Unified saving logic via existing save_animation(...) helper.
+- Added 3D snapshot support:
+  - Implemented plot_frame_xyz(...).
+  - Implemented save_snapshots_xyz(...) for initial and final state plots.
+- Updated CLI (code/nbody/cli.py):
+  - Added --animate-3d flag.
+  - Added --max-3d-n (default: 50).
+  - Added --snapshots flag.
+  - Implemented automatic fallback:
+    - If N > max_3d_n → disable 3D animation and save 3D snapshots instead.
+  - Unified output directory logic:
+    - Single run_dir per execution.
+    - Plots, animations, and snapshots saved together.
+- Removed duplicate snapshot calls.
+- Removed redundant run_dir creation logic.
+- Cleaned up frame-recording logic to ensure:
+  - Frames recorded only when needed (2D/3D animation or snapshots).
+
+REASONS
+- Enable full 3D inspection of system behaviour.
+- Prevent large-N systems from producing unusable 3D animations.
+- Maintain stable performance for disk and cluster scenes.
+- Improve overall code clarity and remove duplicate logic.
+
+WHAT WORKED
+- Small-N systems (two_body, three_body) animate cleanly in 3D.
+- Large-N systems automatically generate initial_xyz.png and final_xyz.png.
+- 3D snapshots useful for checking disk thickness and cluster structure.
+- Saving pipeline works consistently for both 2D and 3D.
+- Output folder structure remains consistent and reproducible.
+
+ISSUES / FIXES
+- Initial duplicate snapshot block caused repeated file generation → removed.
+- Frame-recording logic was set before cfg creation → reorganized.
+- Minor cleanup of unused or redundant logic in CLI and viz.
+
+WHAT HAS BEEN KEPT
+- Physics and solver layers unchanged.
+- 2D animation pipeline unchanged.
+- Existing GIF/MP4 saving mechanism reused.
+- Scene presets and demo behaviour retained.
+
+NEXT ACTION
+- Finalize Phase 7 documentation.
+- Consider light camera rotation for 3D animation (optional polish).

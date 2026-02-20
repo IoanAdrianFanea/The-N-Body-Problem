@@ -368,3 +368,70 @@ LIMITATIONS
 NEXT STEPS
 - (Optional) Implement 3D final plot and/or 3D animation mode.
 - Finalise Phase 7 documentation and README examples.
+
+
+
+
+
+DATE
+20/02/2026
+[Step F – 3D Visualization and Final Cleanup]
+
+OBJECTIVE
+- Add 3D visualization capabilities to inspect spatial structure.
+- Limit 3D animation to small systems for clarity and performance.
+- Provide static 3D snapshots for large systems.
+- Clean up CLI and visualization logic before closing Phase 7.
+
+WHAT WAS ADDED
+- 3D animation mode:
+  - animate_xyz(...) using matplotlib 3D projection.
+  - Space-style dark background consistent with 2D.
+  - Robust percentile-based 3D bounds.
+- 3D snapshot support:
+  - initial_xyz.png
+  - final_xyz.png
+- CLI additions:
+  - --animate-3d
+  - --max-3d-n (default: 50)
+  - --snapshots
+- Automatic fallback:
+  - Large systems automatically save 3D snapshots instead of animating.
+- Code cleanup:
+  - Removed duplicate snapshot calls.
+  - Unified output directory creation.
+  - Simplified frame-recording logic.
+  - Improved CLI flow for clarity.
+
+VISUALIZATION (PLOTS + ANIMATION)
+- 2D XY animation retained.
+- 3D animation available for small systems.
+- Large systems generate 3D initial/final plots.
+- All visual outputs share consistent black background style.
+- All files saved into timestamped output directory.
+
+INTERFACE (RUNNING THE PROJECT)
+- 2D animation:
+  python -m code.nbody.cli run --scene two_body --animate
+- 3D animation (small N):
+  python -m code.nbody.cli run --scene three_body --animate-3d
+- Large N (automatic 3D snapshots):
+  python -m code.nbody.cli run --scene disk --animate-3d
+- Manual 3D snapshots:
+  python -m code.nbody.cli run --scene random_cluster --snapshots
+
+KEY DECISIONS
+- Do not animate large-N systems in 3D.
+- Automatically fall back to 3D snapshots for clarity.
+- Keep physics layer untouched.
+- Reuse existing saving pipeline for consistency.
+
+LIMITATIONS
+- 3D animation does not include camera rotation.
+- Large systems may still produce dense 3D scatter plots.
+- No interactive 3D controls (matplotlib static).
+
+NEXT STEPS
+- Final Phase 7 consolidation.
+- Update README with 3D examples.
+- Prepare project for documentation normalization (Phase 9).

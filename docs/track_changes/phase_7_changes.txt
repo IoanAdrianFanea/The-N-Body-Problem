@@ -352,3 +352,53 @@ WHAT HAS BEEN KEPT
 NEXT ACTION
 - Finalize Phase 7 documentation.
 - Consider light camera rotation for 3D animation (optional polish).
+
+
+
+
+
+DATE
+20/02/2025
+
+[Step F (unplanned) – Added benchmark_cluster Scene for Solver Timing]
+
+WHAT CHANGED
+- Added new scene `benchmark_cluster()` in scenes.py.
+- Designed the scene to generate a large-N random cluster for performance comparison.
+- Enabled virialized initialization (via `virialize=True`) to keep the system roughly bound.
+- Registered `benchmark_cluster` in:
+  - SCENES tuple (cli.py)
+  - SCENE_KWARGS (cli.py)
+  - RUN_PRESETS (cli.py)
+
+REASON
+- Provide a controlled environment to benchmark Direct vs Barnes–Hut solvers.
+- Allow users to reproduce solver scaling behaviour via CLI.
+- Demonstrate the O(N²) vs O(N log N) difference in practice.
+- Avoid using visualization-heavy scenes (e.g., disk) for timing.
+
+IMPLEMENTATION DETAILS
+- Default N set to 2500 (large enough for Barnes–Hut advantage).
+- Reduced timestep count to keep runtime manageable.
+- Benchmark instructions added to README with platform-specific timing commands:
+  - PowerShell: Measure-Command
+  - macOS/Linux: time
+
+WHAT WORKED
+- Barnes–Hut runtime decreases relative to Direct as N increases.
+- For sufficiently large N, Barnes–Hut outperforms Direct.
+- CLI timing instructions allow reproducible benchmarking.
+
+LIMITATIONS
+- Performance crossover point depends on Python overhead.
+- For moderate N (~300–800), Direct may still outperform Barnes–Hut.
+- Benchmark does not isolate tree-build cost from traversal cost.
+
+IMPACT
+- Strengthens demonstration of asymptotic scaling behaviour.
+- Adds reproducible solver comparison for portfolio and documentation.
+- Improves educational value of the project.
+
+NEXT ACTION
+- Optional: Add automated scaling script (N sweep).
+- Optional: Record measured timing table for documentation.

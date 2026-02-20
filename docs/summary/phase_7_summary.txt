@@ -1,437 +1,159 @@
--- This document records a brief summary during implementation of Phase 7 that is reviewed at the end of the phase. --
-
-
-[Step A - Predefined Scences]
-
-OBJECTIVE
-- Introduce predefined simulation scenes to make demonstrations reproducible and easy to run.
-- Provide clear starting systems for testing solvers, integrators, and visualization.
-
-WHAT WAS ADDED
-- A new scenes module containing predefined initial conditions.
-- Implemented the following scenes:
-  - two_body (simple orbital system)
-  - three_body (chaotic system)
-  - random_cluster (seeded random N-body system)
-  - disk (rotating disk-like system for animation demos)
-- Added helper functions to list scenes and select scenes by name.
-
-VISUALIZATION (PLOTS + ANIMATION)
-- No visualization implemented at this stage.
-- Scenes were designed with future plotting and animation in mind, especially the disk scene.
+PHASE 7 — Visualization & Interface
+Status: Complete
 
-INTERFACE (RUNNING THE PROJECT)
-- Scenes are accessed programmatically via a scene selection function.
-- Scene selection is designed to integrate cleanly with the upcoming command-line runner.
+OVERVIEW
+Phase 7 introduced reproducible demo scenes, a command-line interface, 
+static plotting utilities, and animation support. 
 
-KEY DECISIONS
-- Used functions instead of classes for scenes to keep the design simple.
-- Kept scenes independent from simulation configuration (dt, steps, solver).
-- Used seeded randomness for reproducibility in random-based scenes.
-- Included a disk scene to support clear and visually appealing animations.
+No changes were made to:
+- Physics implementation
+- Integrators
+- Solvers
+- Core simulation engine logic
 
-LIMITATIONS
-- Scene parameters are not yet exposed through a user-facing interface.
-- The disk scene is a simplified model and not physically exact.
+The purpose of this phase was to make the system runnable, inspectable, 
+and demonstrable without modifying source code.
 
-HOW TO RUN (FINAL)
-- Not applicable at this stage (runner script not yet implemented).
 
-RESULTS / EXAMPLES (FINAL)
-- Not applicable at this stage.
+STEP A — Predefined Scenes
 
-NEXT STEPS
-- Implement the command-line demo runner.
-- Connect scene selection to solver and integrator selection.
-- Begin adding basic plotting utilities.
 
-LEARNING
-- Improved understanding of flexible function interfaces using **kwargs.
-- Reinforced the importance of reproducibility through seeded randomness.
-- Gained experience separating initial condition logic from simulation and execution logic.
+Added a scenes module containing deterministic initial conditions:
 
+- two_body
+- three_body (figure-eight configuration)
+- random_cluster (seeded, optional virialisation)
+- disk (rotating disk distribution)
 
+Scenes are independent of solver, integrator, dt, and softening.
+Seeded randomness ensures reproducibility.
 
 
+STEP B — Command-Line Interface
 
-[Step B - Demo Runner (CLI)]
 
-OBJECTIVE
-- Introduce a command-line interface to run N-body simulations without modifying source code.
-- Provide a reproducible and user-friendly way to select scenes, solvers, and integrators.
-- Establish a stable interface layer for future visualization and plotting features.
+Implemented code/nbody/cli.py using argparse.
 
-WHAT WAS ADDED
-- Added a command-line entry point (code/nbody/cli.py) using argparse.
-- Implemented a `run` command to execute simulations with configurable parameters.
-- Implemented a `list-scenes` command to list available predefined scenes.
-- Added CLI arguments for scene, solver, integrator, timestep, steps, softening, and Barnes–Hut theta.
-- Added input validation for timestep and number of steps.
-- Added an optional energy diagnostics flag.
-- Added placeholder flags for plotting and animation (not implemented yet).
+Features:
+- run command
+- list-scenes command
+- Scene selection
+- Solver selection (Direct / Barnes–Hut)
+- Integrator selection (Euler / Leapfrog)
+- Parameter overrides (dt, steps, softening, θ)
+- Energy diagnostics flag
 
-VISUALIZATION (PLOTS + ANIMATION)
-- No visualization implemented at this stage.
-- Plotting and animation flags are defined but act as placeholders.
-- Visualization functionality is deferred to Step C.
+Design principles:
+- Stateless execution
+- CLI validation separate from simulation core
+- Scene defaults defined at interface level
 
-INTERFACE (RUNNING THE PROJECT)
-- Simulations can be executed directly from the command line.
-- Default parameters allow a simulation to run without specifying arguments.
-- Scene discovery is supported via the `list-scenes` command.
-- The CLI cleanly separates user interaction from simulation logic.
 
-KEY DECISIONS
-- Used a single `run` command with configuration flags rather than multiple stateful commands.
-- Designed the CLI to be stateless, with each invocation fully defining a simulation run.
-- Provided explicit default parameters for scenes that require arguments.
-- Performed validation at the CLI level instead of in the simulation core.
-- Prioritized clarity and reproducibility over exposing all possible configuration options.
+STEP C — Static Plot Outputs
 
-LIMITATIONS
-- Scene-specific parameters are not yet exposed through the CLI.
-- Plotting and animation functionality is not implemented.
-- CLI output is limited to basic runtime summaries.
 
-HOW TO RUN (FINAL)
-- python -m code.nbody.cli run
-- python -m code.nbody.cli run --scene disk --solver barneshut --energy
-- python -m code.nbody.cli list-scenes
+Added plotting utilities in viz.py.
 
-RESULTS / EXAMPLES (FINAL)
-- All predefined scenes run successfully via the CLI.
-- Solvers and integrators integrate correctly with the CLI runner.
-- Energy diagnostics can be enabled or disabled per run.
+Generated outputs:
+- final_xy_full.png
+- final_xy_zoom.png
+- energy_drift.png
 
-NEXT STEPS
-- Implement plotting utilities for final-state visualization and energy drift.
-- Connect the `--plots` flag to visualization code.
-- Extend CLI output to save figures and results to disk.
+Energy drift normalized using:
+E_scale = max(|E0|, |K0| + |U0|, ε)
 
-LEARNING
-- Developed a clearer understanding of designing stateless, reproducible CLIs.
-- Improved familiarity with argparse subcommands and argument scoping.
-- Learned to separate user-facing interfaces from core simulation logic.
-- Reinforced the importance of defaults and validation in scientific software.
+Outputs saved to timestamped directories.
 
 
+STEP D — Frame Sampling
 
 
+Added:
+- record_frames flag
+- frame_every sampling interval
+- frames list storing (x, y, z) only
 
-[Step C - Plot Outputs + Diagnostics]
+Purpose:
+Support animation without storing full state history.
 
-OBJECTIVE
-- Add basic visual outputs to inspect runs quickly (final positions + energy drift).
-- Save outputs to disk so runs are easy to compare and use in the report.
 
-WHAT WAS ADDED
-- code/nbody/viz.py with plotting helpers and output folder creation.
-- CLI integration: --plots generates and saves figures to outputs/<run_dir>/.
-- Saved plots:
-  - final_xy_full.png
-  - final_xy_zoom.png
-  - energy_drift.png
+STEP E — 2D Animation
 
-VISUALIZATION (PLOTS + ANIMATION)
-- Implemented static Matplotlib plots only.
-- Added full vs zoomed XY plots to handle outliers/escapers.
-- Energy drift uses log scale so large ranges are readable.
 
-INTERFACE (RUNNING THE PROJECT)
-- Plots are enabled through CLI: --plots.
-- Output is stored in a timestamped folder in outputs/.
+Implemented animate_xy(...) using matplotlib FuncAnimation.
 
-KEY DECISIONS
-- Keep plotting separate from CLI (CLI calls functions in viz.py).
-- Compute energy drift using a stable normalisation (E_scale) so it remains meaningful.
+Added CLI flags:
+- --animate
+- --frame-every
+- --interval
 
-LIMITATIONS
-- Only static plots (no animation yet in Step C).
-- Energy drift depends on numerical stability (dt/softening/scene choices).
+Scene adjustments made to ensure stable behaviour under G = 4π².
 
-HOW TO RUN (FINAL)
-- python -m code.nbody.cli run --scene disk --solver barneshut --integrator leapfrog --plots
+Animation uses:
+- XY projection
+- Sampled frames
+- Decoupled playback speed
 
-RESULTS / EXAMPLES (FINAL)
-- Plots made it easy to identify unstable configs and compare solvers.
-- Direct vs Barnes–Hut comparisons confirmed stability depends strongly on dt/softening.
 
-NEXT STEPS
-- Record sampled frames for animation (Step D)
-- Add 2D animation playback via CLI (Step E)
+STEP E (Extension) — Aesthetic Improvements
 
-LEARNING
-- Learned how to structure output folders and save reproducible run artifacts.
-- Learned that plotting can reveal numerical instability quickly.
 
+Added space-style defaults:
+- Black background
+- Static starfield
+- Percentile-based camera bounds
+- Marker size scaling by N
 
+Introduced per-scene run presets for stable demo defaults.
 
 
+STEP F — Animation Saving
 
-[Step D - Frame Sampling for Animation]
 
-OBJECTIVE
-- Add lightweight frame recording so animations don’t require full state history.
+Added:
+- save_animation(...) helper
+- GIF export (PillowWriter)
+- MP4 export (FFMpegWriter)
+- CLI flags: --save-gif, --save-mp4, --fps, --no-show
+- Unified output directory creation
 
-WHAT WAS ADDED
-- record_frames and frame_every configuration options.
-- frames list storing sampled (x,y,z) positions.
-- Initial frame capture at the start of the simulation.
 
-VISUALIZATION (PLOTS + ANIMATION)
-- No animation displayed yet in Step D.
-- Step D prepares data for Step E animation.
+STEP F — 3D Visualization
 
-INTERFACE (RUNNING THE PROJECT)
-- Frames are recorded internally when enabled (later exposed in CLI in Step E).
 
-KEY DECISIONS
-- Keep state_history for diagnostics, but use frames for animation (positions only).
-- Make sampling configurable with frame_every.
-
-LIMITATIONS
-- Frame recording is positions only (no velocities).
-- Frame sampling is fixed-rate (no adaptive sampling).
-
-HOW TO RUN (FINAL)
-- Not user-facing until Step E (animation flag).
-
-RESULTS / EXAMPLES (FINAL)
-- Frames recorded successfully and used as animation input in Step E.
-
-NEXT STEPS
-- Implement animation playback + CLI controls (Step E)
-
-LEARNING
-- Better understanding of separating “scientific record” vs “rendering data”.
-
-
-
-
-
-[Step E - 2D Animation via CLI + Scene Updates]
-
-OBJECTIVE
-- Add a simple 2D XY animation to demonstrate simulations from the CLI.
-- Ensure default scenes behave sensibly in the chosen unit system (G = 4*pi^2).
-
-WHAT WAS ADDED
-- animate_xy(...) using matplotlib.animation.FuncAnimation.
+Added:
+- animate_xyz(...) for 3D animation
+- plot_frame_xyz(...) for static 3D snapshots
 - CLI flags:
-  - --animate
-  - --frame-every
-  - --interval
-- Scene updates:
-  - two_body now chooses a sensible orbit speed by default.
-  - three_body switched to a stable figure-eight setup.
-  - random_cluster can be virialised so it stays roughly bound.
-  - disk rotation speed increased for a better demo.
+  --animate-3d
+  --max-3d-n
+  --snapshots
+- Automatic fallback to snapshots for large N
 
-VISUALIZATION (PLOTS + ANIMATION)
-- Animation: 2D scatter animation using sampled frames.
-- Playback speed controlled via interval (visual only) and frame_every (sampling).
 
-INTERFACE (RUNNING THE PROJECT)
-- python -m code.nbody.cli run --scene two_body --animate
-- python -m code.nbody.cli run --scene disk --solver barneshut --dt 0.0002 --softening 0.01 --animate --frame-every 5 --interval 100
+STEP F (extra) — new scene
 
-KEY DECISIONS
-- Keep animation 2D-only (simpler + faster).
-- Keep physics constant G unchanged; fix scene initial conditions instead.
-- Keep comments/docstrings short and readable.
+
+Added:
+- extra scene benchmark_cluster() for testing barneshut vs direct scenes.py
+- benchmark cluster scene in SCENES cli.py
+- benchmark cluster scene in KWARGS cli.py
+
+
+
 
 LIMITATIONS
-- Animation currently shows only XY (no 3D view).
-- Saving animations to video/GIF not implemented (optional future step).
-
-NEXT STEPS
-- (Optional) Add --save-gif / --save-mp4.
-- (Optional) Add 3D final plot and optional 3D animation mode
-- (Optional) Make simulation more aesthetically pleasing 
-- Final Phase 7 documentation + example commands in README.
-
-LEARNING
-- Learned the difference between “simulation time” and “playback speed”.
-- Learned that unit choices affect what “reasonable” initial velocities look like.
 
 
-
-
-
-[Step E – Aesthetic Improvements (Space-Style Defaults)]
-
-OBJECTIVE
-- Improve the visual presentation of simulations to make demos more polished and portfolio-ready.
-- Reduce command complexity by making animation and run settings scene-aware by default.
-- Fix visual artefacts (edge clipping, over-zooming, overcrowding) without changing physics.
-
-WHAT WAS ADDED
-- Space-style animation defaults in viz:
-  - Black background with static starfield.
-  - Equal aspect ratio and robust percentile-based camera bounds.
-  - Automatic body-size scaling based on number of particles.
-  - Removed glow and visual toggles to keep rendering clean and consistent.
-- Scene-based run presets in CLI:
-  - Per-scene defaults for dt, steps, softening, frame_every, and interval.
-  - Minimal command usage: `run --scene X --animate` produces a good demo.
-- Improved list-scenes output to display scene defaults and run presets.
-
-VISUALIZATION (PLOTS + ANIMATION)
-- 2D XY animation now uses consistent “space” theme by default.
-- Camera bounds computed using percentile-based limits to prevent bodies appearing stuck at edges.
-- Marker size adapts to N to maintain readability across small and large systems.
-
-INTERFACE (RUNNING THE PROJECT)
-- python -m code.nbody.cli run --scene two_body --animate
-- python -m code.nbody.cli run --scene disk --animate
-- python -m code.nbody.cli list-scenes
-
-KEY DECISIONS
-- Keep physics unchanged; improve presentation purely in visualization layer.
-- Use scene presets to avoid requiring manual dt/softening tuning for demos.
-- Keep animation 2D-only for simplicity and reliability.
-
-LIMITATIONS
-- Still limited to 2D XY projection.
-- No built-in saving of animations to GIF/MP4 yet.
-- Disk scene is visually tuned for demos, not a fully self-consistent galactic equilibrium model (to be fixed in extra optimisation phase).
-
-NEXT STEPS
-- (Optional) Add saving animations to GIF/MP4.
-- (Optional) Implement 3D final plot and 3D animation mode.
-- Finalise Phase 7 documentation and README examples.
-
-LEARNING
-- Learned how camera framing affects perceived simulation quality.
-- Understood the importance of separating physics logic from visualization logic.
-- Improved CLI usability by shifting complexity into scene-based presets.
-
-
-
-
-
-DATE
-19/02/2026
-[Step F – Animation Saving (GIF/MP4 Export via CLI)]
-
-OBJECTIVE
-- Allow animations to be saved so good runs are not lost.
-- Store animation files inside the same timestamped output folder as plots.
-- Keep saving logic cleanly separated from simulation and physics code.
-
-WHAT WAS ADDED
-- save_animation(...) helper in viz.py.
-- GIF saving using PillowWriter (no external dependency).
-- MP4 saving using FFMpegWriter (requires ffmpeg installed).
-- Extended animate_xy(...) to:
-  - Accept out_path parameter.
-  - Accept fps parameter.
-  - Support save-only mode via --no-show.
-- CLI flags:
-  - --save-gif
-  - --save-mp4
-  - --fps
-  - --no-show
-- Unified output folder creation:
-  - make_run_dir(...) now triggered if plots OR animation saving is enabled.
-  - Plots and animations saved in the same directory.
-
-VISUALIZATION (PLOTS + ANIMATION)
-- 2D XY animation can now:
-  - Display only
-  - Save only
-  - Display + save
-- Saved animations use the same space-style theme.
-- Files saved inside:
-  outputs/YYYYMMDD_scene_solver_integrator_Nxxx/
-
-INTERFACE (RUNNING THE PROJECT)
-- Show animation only:
-  python -m code.nbody.cli run --scene two_body --animate
-- Save GIF without showing:
-  python -m code.nbody.cli run --scene disk --animate --save-gif --no-show
-- Save MP4:
-  python -m code.nbody.cli run --scene random_cluster --animate --save-mp4 --no-show
-- Save plots + animation:
-  python -m code.nbody.cli run --scene disk --animate --save-gif --plots --no-show
-
-KEY DECISIONS
-- Keep export logic inside viz.py.
-- Avoid changing physics or simulation core.
-- Reuse existing timestamped output directory system.
-
-LIMITATIONS
-- MP4 requires ffmpeg installed on system.
-- Large-N scenes produce large GIF files.
-- Only 2D animation is currently exportable.
-
-NEXT STEPS
-- (Optional) Implement 3D final plot and/or 3D animation mode.
-- Finalise Phase 7 documentation and README examples.
-
-
-
-
-
-DATE
-20/02/2026
-[Step F – 3D Visualization and Final Cleanup]
-
-OBJECTIVE
-- Add 3D visualization capabilities to inspect spatial structure.
-- Limit 3D animation to small systems for clarity and performance.
-- Provide static 3D snapshots for large systems.
-- Clean up CLI and visualization logic before closing Phase 7.
-
-WHAT WAS ADDED
-- 3D animation mode:
-  - animate_xyz(...) using matplotlib 3D projection.
-  - Space-style dark background consistent with 2D.
-  - Robust percentile-based 3D bounds.
-- 3D snapshot support:
-  - initial_xyz.png
-  - final_xyz.png
-- CLI additions:
-  - --animate-3d
-  - --max-3d-n (default: 50)
-  - --snapshots
-- Automatic fallback:
-  - Large systems automatically save 3D snapshots instead of animating.
-- Code cleanup:
-  - Removed duplicate snapshot calls.
-  - Unified output directory creation.
-  - Simplified frame-recording logic.
-  - Improved CLI flow for clarity.
-
-VISUALIZATION (PLOTS + ANIMATION)
-- 2D XY animation retained.
-- 3D animation available for small systems.
-- Large systems generate 3D initial/final plots.
-- All visual outputs share consistent black background style.
-- All files saved into timestamped output directory.
-
-INTERFACE (RUNNING THE PROJECT)
-- 2D animation:
-  python -m code.nbody.cli run --scene two_body --animate
-- 3D animation (small N):
-  python -m code.nbody.cli run --scene three_body --animate-3d
-- Large N (automatic 3D snapshots):
-  python -m code.nbody.cli run --scene disk --animate-3d
-- Manual 3D snapshots:
-  python -m code.nbody.cli run --scene random_cluster --snapshots
-
-KEY DECISIONS
-- Do not animate large-N systems in 3D.
-- Automatically fall back to 3D snapshots for clarity.
-- Keep physics layer untouched.
-- Reuse existing saving pipeline for consistency.
-
-LIMITATIONS
 - 3D animation does not include camera rotation.
-- Large systems may still produce dense 3D scatter plots.
-- No interactive 3D controls (matplotlib static).
+- Large-N 3D plots may appear visually dense.
+- Disk model is visually tuned, not dynamically exact.
+- Implementation remains pure Python.
 
-NEXT STEPS
-- Final Phase 7 consolidation.
-- Update README with 3D examples.
-- Prepare project for documentation normalization (Phase 9).
+
+CONCLUSION
+
+
+Phase 7 completed the interface and visualization layer of the project.
+The simulation framework can now be run, inspected, and exported entirely
+through the CLI without modifying source files.
